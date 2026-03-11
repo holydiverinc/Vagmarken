@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>Vägmärken</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;max-width:430px;margin:0 auto;display:flex;flex-direction:column;overflow-x:hidden}
+    .header{background:linear-gradient(135deg,#005B99,#00305A);padding:18px 20px 14px;box-shadow:0 2px 16px rgba(0,48,90,0.3);display:flex;align-items:center;gap:10}
+    .header-title{color:white;font-weight:800;font-size:22px;letter-spacing:-0.5px;line-height:1}
+    .header-sub{color:rgba(255,255,255,0.6);font-size:12px;margin-top:2px}
+    .tabs{display:flex;background:white;border-bottom:1px solid #DDE3EB}
+    .tab{flex:1;padding:13px 0;background:none;border:none;border-bottom:3px solid transparent;color:#8A9BB0;font-weight:500;font-size:14px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+    .tab.active{border-bottom-color:#005B99;color:#005B99;font-weight:700}
+    .content{flex:1;display:flex;flex-direction:column;overflow:auto}
+    .page{display:none;flex:1;flex-direction:column}
+    .page.active{display:flex}
+
+```
+/* Scan idle */
+.hero{background:linear-gradient(180deg,#00305A,#005B99);padding:36px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:16}
+.viewfinder{width:200px;height:200px;border:2px solid rgba(255,255,255,0.2);border-radius:20px;position:relative;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2)}
+.viewfinder span{font-size:64px;opacity:0.4}
+.corner{position:absolute;width:24px;height:24px}
+.corner.tl{top:-1px;left:-1px;border-top:3px solid #FFD700;border-left:3px solid #FFD700;border-radius:4px 0 0 0}
+.corner.tr{top:-1px;right:-1px;border-top:3px solid #FFD700;border-right:3px solid #FFD700;border-radius:0 4px 0 0}
+.corner.bl{bottom:-1px;left:-1px;border-bottom:3px solid #FFD700;border-left:3px solid #FFD700;border-radius:0 0 0 4px}
+.corner.br{bottom:-1px;right:-1px;border-bottom:3px solid #FFD700;border-right:3px solid #FFD700;border-radius:0 0 4px 0}
+.hero-hint{color:rgba(255,255,255,0.65);font-size:14px;text-align:center}
+.actions{padding:24px 20px;display:flex;flex-direction:column;gap:12}
+.btn{border-radius:18px;font-size:17px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;gap:10;width:100%;padding:19px;border:none;transition:opacity .15s}
+.btn:active{opacity:0.85}
+.btn-primary{background:linear-gradient(135deg,#005B99,#00305A);color:white;box-shadow:0 6px 20px rgba(0,91,153,0.35)}
+.btn-secondary{background:white;color:#005B99;border:2px solid #005B99 !important;font-size:16px;font-weight:600;padding:15px}
+.tip{background:white;border-radius:14px;padding:14px 16px;border:1px solid #DDE3EB;color:#6B7A8D;font-size:13px;line-height:1.5;display:flex;gap:10}
+
+/* Scanning */
+.scanning{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:24px}
+.preview-thumb{width:150px;height:150px;border-radius:20px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,0.18)}
+.preview-thumb img{width:100%;height:100%;object-fit:cover}
+.spinner{width:52px;height:52px;margin:0 auto 18px;border:4px solid #DDE3EB;border-top:4px solid #005B99;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scanning-title{font-weight:700;font-size:19px;color:#1A2B3C;text-align:center}
+.scanning-sub{color:#8A9BB0;font-size:14px;margin-top:6px;text-align:center}
+
+/* Result */
+.result{flex:1;padding:16px 16px 28px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.result-img{border-radius:18px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,0.13);max-height:200px}
+.result-img img{width:100%;height:200px;object-fit:cover}
+.badges{display:flex;align-items:center;gap:10;flex-wrap:wrap}
+.code-badge{background:linear-gradient(135deg,#005B99,#00305A);color:white;font-weight:800;font-size:24px;padding:6px 18px;border-radius:12px;letter-spacing:1.5px}
+.cat-badge{font-size:12px;font-weight:700;padding:5px 12px;border-radius:9px;border:1.5px solid}
+.low-conf{font-size:12px;color:#F0A500;font-weight:700}
+.card{background:white;border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.06)}
+.card-label{font-size:11px;color:#8A9BB0;font-weight:700;letter-spacing:0.8px;margin-bottom:6px}
+.card-value{font-weight:700;font-size:18px;color:#1A2B3C}
+.divider{height:1px;background:#EEF1F6;margin:14px 0}
+.desc-text{color:#2C3E50;font-size:15px;line-height:1.7}
+
+/* Error */
+.error-page{flex:1;padding:20px 16px 28px;display:flex;flex-direction:column;gap:14px}
+.error-center{display:flex;flex-direction:column;align-items:center;gap:10;text-align:center}
+.error-thumb{width:110px;height:110px;border-radius:16px;overflow:hidden;opacity:0.8}
+.error-thumb img{width:100%;height:100%;object-fit:cover}
+.error-icon{font-size:42px}
+.error-title{font-weight:700;font-size:18px;color:#1A2B3C}
+.error-msg{color:#8A9BB0;font-size:13px;line-height:1.5}
+.debug{background:#0F1923;border-radius:14px;padding:14px 16px;border:1px solid #1E3A52}
+.debug-title{font-size:11px;font-weight:700;color:#3D7EAA;margin-bottom:10px;letter-spacing:1px}
+.debug-row{display:flex;gap:8px;margin-bottom:5px;font-size:11px}
+.debug-key{color:#3D7EAA;min-width:80px;flex-shrink:0}
+.debug-val{color:#9DC8E8;font-family:monospace;word-break:break-all;line-height:1.4}
+
+/* History */
+.history{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8A9BB0;gap:14px;padding:40px;text-align:center}
+.empty-icon{font-size:52px}
+.empty-title{font-weight:700;font-size:17px}
+.hist-item{background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex}
+.hist-img{width:80px;height:80px;object-fit:cover;flex-shrink:0}
+.hist-info{padding:12px 14px;flex:1;min-width:0}
+.hist-badges{display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap}
+.hist-code{background:#005B99;color:white;font-weight:800;font-size:13px;padding:2px 9px;border-radius:6px}
+.hist-cat{font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px}
+.hist-name{font-weight:700;font-size:14px;color:#1A2B3C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-sv{font-size:12px;color:#8A9BB0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+```
+
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <span style="font-size:26px">🇸🇪</span>
+  <div>
+    <div class="header-title">Vägmärken</div>
+    <div class="header-sub">Сканер шведских дорожных знаков</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('scan')">📷 Сканировать</button>
+  <button class="tab" id="hist-tab" onclick="switchTab('history')">🗂 История (0)</button>
+</div>
+
+<div class="content">
+
+  <!-- SCAN PAGE -->
+
+  <div class="page active" id="page-scan">
+
+```
+<!-- IDLE -->
+<div id="state-idle">
+  <div class="hero">
+    <div class="viewfinder">
+      <span>🚦</span>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+    </div>
+    <div class="hero-hint">Сфотографируй знак или загрузи изображение</div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">
+      <span style="font-size:22px">📸</span> Снять на камеру
+    </button>
+    <input id="camera-input" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)"/>
+    <button class="btn btn-secondary" onclick="document.getElementById('gallery-input').click()">
+      <span style="font-size:20px">🖼️</span> Загрузить из галереи
+    </button>
+    <input id="gallery-input" type="file" accept="image/*" style="display:none" onchange="handleFile(this)"/>
+    <div class="tip"><span style="font-size:18px">💡</span><span>Фотографируй знак чётко и прямо, при хорошем освещении без бликов.</span></div>
+  </div>
+</div>
+
+<!-- SCANNING -->
+<div id="state-scanning" style="display:none">
+  <div class="scanning">
+    <div class="preview-thumb" id="scan-thumb" style="display:none"><img id="scan-thumb-img" src="" alt=""/></div>
+    <div>
+      <div class="spinner"></div>
+      <div class="scanning-title">Распознаю знак…</div>
+      <div class="scanning-sub" id="scan-info">Подготавливаю…</div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="state-result" style="display:none">
+  <div class="result">
+    <div class="result-img" id="result-img" style="display:none"><img id="result-img-src" src="" alt=""/></div>
+    <div class="badges">
+      <div class="code-badge" id="result-code"></div>
+      <div class="cat-badge" id="result-cat"></div>
+      <div class="low-conf" id="result-conf" style="display:none">⚠️ Низкая уверенность</div>
+    </div>
+    <div class="card">
+      <div class="card-label">ШВЕДСКОЕ НАЗВАНИЕ</div>
+      <div class="card-value" id="result-sv"></div>
+      <div class="divider"></div>
+      <div class="card-label">ПЕРЕВОД</div>
+      <div class="card-value" id="result-ru"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">ОПИСАНИЕ</div>
+      <div class="desc-text" id="result-desc"></div>
+    </div>
+    <button class="btn btn-primary" onclick="reset()"><span style="font-size:20px">📷</span> Сканировать ещё</button>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div id="state-error" style="display:none">
+  <div class="error-page">
+    <div class="error-center">
+      <div class="error-thumb" id="err-thumb" style="display:none"><img id="err-thumb-img" src="" alt=""/></div>
+      <div class="error-icon">🔍</div>
+      <div class="error-title">Знак не распознан</div>
+      <div class="error-msg" id="err-msg"></div>
+    </div>
+    <div class="debug" id="debug-panel" style="display:none">
+      <div class="debug-title">🔧 ДИАГНОСТИКА</div>
+      <div id="debug-rows"></div>
+    </div>
+    <button class="btn btn-primary" onclick="reset()">Попробовать снова</button>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- HISTORY PAGE -->
+
+  <div class="page" id="page-history">
+    <div class="history" id="history-list">
+      <div class="empty">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">История пуста</div>
+        <div>Отсканируй первый знак — он появится здесь</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CAT = {
+  "предупреждающий": { bg:"#FFF8E1", border:"#F9A825", text:"#6D4C00", icon:"⚠️" },
+  "запрещающий":     { bg:"#FFEBEE", border:"#C62828", text:"#7A0000", icon:"🚫" },
+  "предписывающий":  { bg:"#E3F2FD", border:"#1565C0", text:"#0D2F6E", icon:"🔵" },
+  "информационный":  { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"ℹ️" },
+  "указательный":    { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"🗺️" },
+};
+
+let history = [];
+let currentPreview = null;
+let currentTab = "scan";
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll(".tab").forEach((t,i) => t.classList.toggle("active", (i===0&&tab==="scan")||(i===1&&tab==="history")));
+  document.getElementById("page-scan").classList.toggle("active", tab==="scan");
+  document.getElementById("page-history").classList.toggle("active", tab==="history");
+  if (tab==="scan") reset();
+}
+
+function setState(s) {
+  ["idle","scanning","result","error"].forEach(x => {
+    document.getElementById("state-"+x).style.display = x===s ? "" : "none";
+  });
+}
+
+function reset() {
+  setState("idle");
+  currentPreview = null;
+  document.getElementById("camera-input").value = "";
+  document.getElementById("gallery-input").value = "";
+}
+
+function showDebug(dbg) {
+  const panel = document.getElementById("debug-panel");
+  const rows = document.getElementById("debug-rows");
+  if (!dbg || Object.keys(dbg).length === 0) { panel.style.display="none"; return; }
+  panel.style.display = "";
+  rows.innerHTML = Object.entries(dbg).filter(([,v])=>v!=null&&v!=="").map(([k,v])=>
+    `<div class="debug-row"><span class="debug-key">${k}:</span><span class="debug-val">${String(v).slice(0,200)}</span></div>`
+  ).join("");
+}
+
+function extractJSON(text) {
+  if (!text) return null;
+  try { return JSON.parse(text.trim()); } catch {}
+  try { return JSON.parse(text.replace(/```(?:json)?/gi,"").trim()); } catch {}
+  const m = text.match(/\{[\s\S]*\}/);
+  if (m) { try { return JSON.parse(m[0]); } catch {} }
+  return null;
+}
+
+function prepareImage(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onerror = () => resolve({ ok:false, error:"FileReader failed" });
+    reader.onload = ev => {
+      const img = new Image();
+      img.onerror = () => resolve({ ok:false, error:"Image load failed" });
+      img.onload = () => {
+        const MAX = 500;
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if (!w || !h) return resolve({ ok:false, error:"Zero dimensions" });
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h*MAX/w); w = MAX; }
+          else       { w = Math.round(w*MAX/h); h = MAX; }
+        }
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          resolve({ ok:true, dataUrl, w, h, kb:Math.round(dataUrl.length*0.75/1024) });
+        } catch(e) { resolve({ ok:false, error:"Canvas: "+e.message }); }
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderHistory() {
+  const list = document.getElementById("history-list");
+  document.getElementById("hist-tab").textContent = `🗂 История (${history.length})`;
+  if (history.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">История пуста</div><div>Отсканируй первый знак — он появится здесь</div></div>`;
+    return;
+  }
+  list.innerHTML = history.map(item => {
+    const c = CAT[item.category] || CAT["информационный"];
+    return `<div class="hist-item">
+      ${item.image ? `<img class="hist-img" src="${item.image}" alt=""/>` : ""}
+      <div class="hist-info">
+        <div class="hist-badges">
+          <span class="hist-code">${item.code}</span>
+          <span class="hist-cat" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${c.icon} ${item.category}</span>
+        </div>
+        <div class="hist-name">${item.name_ru}</div>
+        <div class="hist-sv">${item.name_sv}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function handleFile(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  input.value = "";
+
+  setState("scanning");
+  const dbg = { fileSize: Math.round(file.size/1024)+"KB", fileType: file.type };
+
+  try {
+    const prep = await prepareImage(file);
+    if (!prep.ok) throw new Error("Подготовка: " + prep.error);
+
+    dbg.imgKb = prep.kb+"KB";
+    dbg.dims = `${prep.w}×${prep.h}`;
+    currentPreview = prep.dataUrl;
+
+    document.getElementById("scan-thumb").style.display = "";
+    document.getElementById("scan-thumb-img").src = prep.dataUrl;
+    document.getElementById("scan-info").textContent = `${prep.kb}KB · ${prep.w}×${prep.h}`;
+
+    const base64 = prep.dataUrl.split(",")[1];
+
+    const resp = await fetch("/api/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: base64 })
+    });
+
+    dbg.httpStatus = resp.status;
+    const data = await resp.json();
+    dbg.raw = JSON.stringify(data).slice(0, 200);
+
+    if (!resp.ok) throw new Error(data.error || "Ошибка сервера");
+    if (!data.text) throw new Error("Пустой ответ от модели");
+
+    const parsed = extractJSON(data.text);
+    if (!parsed) throw new Error(`Не удалось разобрать: "${data.text.slice(0,80)}"`);
+
+    if (parsed.found) {
+      // Show result
+      const c = CAT[parsed.category] || CAT["информационный"];
+      if (currentPreview) {
+        document.getElementById("result-img").style.display = "";
+        document.getElementById("result-img-src").src = currentPreview;
+      }
+      document.getElementById("result-code").textContent = parsed.code;
+      const catEl = document.getElementById("result-cat");
+      catEl.textContent = `${c.icon} ${parsed.category}`;
+      catEl.style.background = c.bg;
+      catEl.style.color = c.text;
+      catEl.style.borderColor = c.border;
+      document.getElementById("result-conf").style.display = parsed.confidence==="low" ? "" : "none";
+      document.getElementById("result-sv").textContent = parsed.name_sv;
+      document.getElementById("result-ru").textContent = parsed.name_ru;
+      document.getElementById("result-desc").textContent = parsed.description_ru;
+      setState("result");
+
+      history = [{ ...parsed, image: currentPreview, ts: Date.now() }, ...history].slice(0, 20);
+      renderHistory();
+    } else {
+      // Not found
+      if (currentPreview) {
+        document.getElementById("err-thumb").style.display = "";
+        document.getElementById("err-thumb-img").src = currentPreview;
+      }
+      document.getElementById("err-msg").textContent = parsed.reason || "Знак не найден на фото";
+      showDebug(null);
+      setState("error");
+    }
+  } catch(err) {
+    dbg.error = err.message;
+    if (currentPreview) {
+      document.getElementById("err-thumb").style.display = "";
+      document.getElementById("err-thumb-img").src = currentPreview;
+    }
+    document.getElementById("err-msg").textContent = err.message;
+    showDebug(dbg);
+    setState("error");
+  }
+}
+</script>
+
+</body>
+</html>
