@@ -22,9 +22,8 @@
     .page.active{display:flex}
 
 ```
-/* Scan idle */
 .hero{background:linear-gradient(180deg,#00305A,#005B99);padding:36px 24px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16;width:100%}
-.viewfinder{width:200px;height:200px;border:2px solid rgba(255,255,255,0.2);border-radius:20px;position:relative;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2)}
+.viewfinder{width:200px;height:200px;margin:0 auto;border:2px solid rgba(255,255,255,0.2);border-radius:20px;position:relative;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2)}
 .viewfinder span{font-size:64px;opacity:0.4}
 .corner{position:absolute;width:24px;height:24px}
 .corner.tl{top:-1px;left:-1px;border-top:3px solid #FFD700;border-left:3px solid #FFD700;border-radius:4px 0 0 0}
@@ -39,7 +38,6 @@
 .btn-secondary{background:white;color:#005B99;border:2px solid #005B99 !important;font-size:16px;font-weight:600;padding:15px}
 .tip{background:white;border-radius:14px;padding:14px 16px;border:1px solid #DDE3EB;color:#6B7A8D;font-size:13px;line-height:1.5;display:flex;gap:10}
 
-/* Scanning */
 .scanning{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:24px}
 .preview-thumb{width:150px;height:150px;border-radius:20px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,0.18)}
 .preview-thumb img{width:100%;height:100%;object-fit:cover}
@@ -48,7 +46,6 @@
 .scanning-title{font-weight:700;font-size:19px;color:#1A2B3C;text-align:center}
 .scanning-sub{color:#8A9BB0;font-size:14px;margin-top:6px;text-align:center}
 
-/* Result */
 .result{flex:1;padding:16px 16px 28px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
 .result-img{border-radius:18px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,0.13);max-height:200px}
 .result-img img{width:100%;height:200px;object-fit:cover}
@@ -62,7 +59,13 @@
 .divider{height:1px;background:#EEF1F6;margin:14px 0}
 .desc-text{color:#2C3E50;font-size:15px;line-height:1.7}
 
-/* Error */
+.parking-card{border-radius:18px;padding:20px 22px;display:flex;align-items:center;gap:16;box-shadow:0 4px 20px rgba(0,0,0,0.15)}
+.parking-card.allowed{background:linear-gradient(135deg,#1B8A3E,#0F5C28)}
+.parking-card.forbidden{background:linear-gradient(135deg,#C62828,#8B0000)}
+.parking-icon{font-size:44px;flex-shrink:0}
+.parking-status{color:white;font-weight:800;font-size:20px;line-height:1.1;margin-bottom:6px}
+.parking-reason{color:rgba(255,255,255,0.88);font-size:13px;line-height:1.5}
+
 .error-page{flex:1;padding:20px 16px 28px;display:flex;flex-direction:column;gap:14px}
 .error-center{display:flex;flex-direction:column;align-items:center;gap:10;text-align:center}
 .error-thumb{width:110px;height:110px;border-radius:16px;overflow:hidden;opacity:0.8}
@@ -76,7 +79,6 @@
 .debug-key{color:#3D7EAA;min-width:80px;flex-shrink:0}
 .debug-val{color:#9DC8E8;font-family:monospace;word-break:break-all;line-height:1.4}
 
-/* History */
 .history{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8A9BB0;gap:14px;padding:40px;text-align:center}
 .empty-icon{font-size:52px}
@@ -86,6 +88,8 @@
 .hist-info{padding:12px 14px;flex:1;min-width:0}
 .hist-badges{display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap}
 .hist-code{background:#005B99;color:white;font-weight:800;font-size:13px;padding:2px 9px;border-radius:6px}
+.hist-parking-ok{background:#1B8A3E;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px}
+.hist-parking-no{background:#C62828;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px}
 .hist-cat{font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px}
 .hist-name{font-weight:700;font-size:14px;color:#1A2B3C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hist-sv{font-size:12px;color:#8A9BB0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -110,20 +114,17 @@
 
 <div class="content">
 
-  <!-- SCAN PAGE -->
-
   <div class="page active" id="page-scan">
 
 ```
-<!-- IDLE -->
 <div id="state-idle">
-  <div class="hero" style="align-items:center;width:100%">
-  <div class="viewfinder" style="width:200px;height:200px;margin:0 auto">
+  <div class="hero">
+    <div class="viewfinder">
       <span>🚦</span>
       <div class="corner tl"></div><div class="corner tr"></div>
       <div class="corner bl"></div><div class="corner br"></div>
     </div>
-    <div class="hero-hint">Сфотографируй знак или загрузи изображение</div>
+    <div class="hero-hint">Сфотографируй знак — распознаю и проверю парковку</div>
   </div>
   <div class="actions">
     <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">
@@ -134,11 +135,10 @@
       <span style="font-size:20px">🖼️</span> Загрузить из галереи
     </button>
     <input id="gallery-input" type="file" accept="image/*" style="display:none" onchange="handleFile(this)"/>
-    <div class="tip"><span style="font-size:18px">💡</span><span>Фотографируй знак чётко и прямо, при хорошем освещении без бликов.</span></div>
+    <div class="tip"><span style="font-size:18px">💡</span><span>Для парковочных знаков автоматически учитывается текущая дата и время.</span></div>
   </div>
 </div>
 
-<!-- SCANNING -->
 <div id="state-scanning" style="display:none">
   <div class="scanning">
     <div class="preview-thumb" id="scan-thumb" style="display:none"><img id="scan-thumb-img" src="" alt=""/></div>
@@ -150,10 +150,20 @@
   </div>
 </div>
 
-<!-- RESULT -->
 <div id="state-result" style="display:none">
   <div class="result">
     <div class="result-img" id="result-img" style="display:none"><img id="result-img-src" src="" alt=""/></div>
+
+    <div id="parking-indicator" style="display:none">
+      <div class="parking-card" id="parking-card">
+        <div class="parking-icon" id="parking-icon"></div>
+        <div>
+          <div class="parking-status" id="parking-status"></div>
+          <div class="parking-reason" id="parking-reason"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="badges">
       <div class="code-badge" id="result-code"></div>
       <div class="cat-badge" id="result-cat"></div>
@@ -174,7 +184,6 @@
   </div>
 </div>
 
-<!-- ERROR -->
 <div id="state-error" style="display:none">
   <div class="error-page">
     <div class="error-center">
@@ -193,8 +202,6 @@
 ```
 
   </div>
-
-  <!-- HISTORY PAGE -->
 
   <div class="page" id="page-history">
     <div class="history" id="history-list">
@@ -219,10 +226,8 @@ const CAT = {
 
 let history = [];
 let currentPreview = null;
-let currentTab = "scan";
 
 function switchTab(tab) {
-  currentTab = tab;
   document.querySelectorAll(".tab").forEach((t,i) => t.classList.toggle("active", (i===0&&tab==="scan")||(i===1&&tab==="history")));
   document.getElementById("page-scan").classList.toggle("active", tab==="scan");
   document.getElementById("page-history").classList.toggle("active", tab==="history");
@@ -299,12 +304,18 @@ function renderHistory() {
   }
   list.innerHTML = history.map(item => {
     const c = CAT[item.category] || CAT["информационный"];
+    let parkingBadge = "";
+    if (item.is_parking_sign) {
+      parkingBadge = item.parking_allowed
+        ? `<span class="hist-parking-ok">🟢 Можно</span>`
+        : `<span class="hist-parking-no">🔴 Нельзя</span>`;
+    }
     return `<div class="hist-item">
       ${item.image ? `<img class="hist-img" src="${item.image}" alt=""/>` : ""}
       <div class="hist-info">
         <div class="hist-badges">
           <span class="hist-code">${item.code}</span>
-          <span class="hist-cat" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${c.icon} ${item.category}</span>
+          ${parkingBadge || `<span class="hist-cat" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${c.icon} ${item.category}</span>`}
         </div>
         <div class="hist-name">${item.name_ru}</div>
         <div class="hist-sv">${item.name_sv}</div>
@@ -317,7 +328,6 @@ async function handleFile(input) {
   const file = input.files?.[0];
   if (!file) return;
   input.value = "";
-
   setState("scanning");
   const dbg = { fileSize: Math.round(file.size/1024)+"KB", fileType: file.type };
 
@@ -334,11 +344,14 @@ async function handleFile(input) {
     document.getElementById("scan-info").textContent = `${prep.kb}KB · ${prep.w}×${prep.h}`;
 
     const base64 = prep.dataUrl.split(",")[1];
+    const now = new Date();
+    const localTime = now.toTimeString().slice(0,5);
+    const localDay = now.getDate();
 
     const resp = await fetch("/api/scan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: base64 })
+      body: JSON.stringify({ image: base64, localTime, localDay })
     });
 
     dbg.httpStatus = resp.status;
@@ -352,12 +365,26 @@ async function handleFile(input) {
     if (!parsed) throw new Error(`Не удалось разобрать: "${data.text.slice(0,80)}"`);
 
     if (parsed.found) {
-      // Show result
       const c = CAT[parsed.category] || CAT["информационный"];
+
       if (currentPreview) {
         document.getElementById("result-img").style.display = "";
         document.getElementById("result-img-src").src = currentPreview;
       }
+
+      const parkingEl = document.getElementById("parking-indicator");
+      if (parsed.is_parking_sign) {
+        parkingEl.style.display = "";
+        const card = document.getElementById("parking-card");
+        const allowed = parsed.parking_allowed;
+        card.className = "parking-card " + (allowed ? "allowed" : "forbidden");
+        document.getElementById("parking-icon").textContent = allowed ? "🟢" : "🔴";
+        document.getElementById("parking-status").textContent = allowed ? "Парковаться можно" : "Парковаться нельзя";
+        document.getElementById("parking-reason").textContent = parsed.parking_reason_ru || "";
+      } else {
+        parkingEl.style.display = "none";
+      }
+
       document.getElementById("result-code").textContent = parsed.code;
       const catEl = document.getElementById("result-cat");
       catEl.textContent = `${c.icon} ${parsed.category}`;
@@ -373,7 +400,6 @@ async function handleFile(input) {
       history = [{ ...parsed, image: currentPreview, ts: Date.now() }, ...history].slice(0, 20);
       renderHistory();
     } else {
-      // Not found
       if (currentPreview) {
         document.getElementById("err-thumb").style.display = "";
         document.getElementById("err-thumb-img").src = currentPreview;
