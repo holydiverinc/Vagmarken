@@ -91,6 +91,14 @@
     .hist-sv{font-size:12px;color:#8A9BB0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .hist-time{font-size:11px;color:#B0BEC5;margin-top:3px}
     .clear-btn{background:none;border:1px solid #DDE3EB;border-radius:10px;color:#8A9BB0;font-size:13px;font-family:'Outfit',sans-serif;padding:8px 16px;cursor:pointer;align-self:center}
+    .signs-list{background:white;border-radius:18px;padding:14px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;gap:0}
+    .signs-list-title{font-size:11px;color:#8A9BB0;font-weight:700;letter-spacing:0.8px;margin-bottom:10px}
+    .sign-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #EEF1F6}
+    .sign-row:last-child{border-bottom:none;padding-bottom:0}
+    .sign-row-code{background:#005B99;color:white;font-weight:800;font-size:11px;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:2px}
+    .sign-row-info{flex:1;min-width:0}
+    .sign-row-name{font-weight:600;font-size:13px;color:#1A2B3C}
+    .sign-row-desc{font-size:12px;color:#6B7A8D;line-height:1.4;margin-top:2px}
   </style>
 </head>
 <body>
@@ -176,6 +184,10 @@
           <div class="card-label" data-i18n="label_description"></div>
           <div class="desc-text" id="result-desc"></div>
         </div>
+        <div class="signs-list" id="signs-list" style="display:none">
+          <div class="signs-list-title" data-i18n="label_all_signs"></div>
+          <div id="signs-rows"></div>
+        </div>
         <button class="btn btn-primary" onclick="reset()"><span style="font-size:20px">📷</span> <span data-i18n="btn_scan_more"></span></button>
       </div>
     </div>
@@ -227,6 +239,7 @@ const TRANSLATIONS = {
     hist_parking_no: "🔴 Не можна",
     clear_history: "Очистити історію",
     confirm_clear: "Очистити всю історію?",
+    label_all_signs: "УСІ ЗНАКИ НА ФОТО",
     cat_warning: "попереджувальний",
     cat_prohibitory: "заборонний",
     cat_mandatory: "приписувальний",
@@ -257,6 +270,7 @@ const TRANSLATIONS = {
     hist_parking_no: "🔴 Förbjuden",
     clear_history: "Rensa historik",
     confirm_clear: "Rensa all historik?",
+    label_all_signs: "ALLA SKYLTAR PÅ FOTOT",
     cat_warning: "varning",
     cat_prohibitory: "förbud",
     cat_mandatory: "påbud",
@@ -287,6 +301,7 @@ const TRANSLATIONS = {
     hist_parking_no: "🔴 Нельзя",
     clear_history: "Очистить историю",
     confirm_clear: "Очистить всю историю?",
+    label_all_signs: "ВСЕ ЗНАКИ НА ФОТО",
     cat_warning: "предупреждающий",
     cat_prohibitory: "запрещающий",
     cat_mandatory: "предписывающий",
@@ -492,6 +507,7 @@ async function handleFile(input) {
 
     const base64 = prep.dataUrl.split(",")[1];
     const now = new Date();
+    const localWeekday = now.getDay() === 0 ? 7 : now.getDay(); // 1=Mon, 7=Sun
     const resp = await fetch("/api/scan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -499,6 +515,8 @@ async function handleFile(input) {
         image: base64,
         localTime: now.toTimeString().slice(0,5),
         localDay: now.getDate(),
+        localMonth: now.getMonth() + 1,
+        localWeekday,
         responseLang: API_LANG[currentLang]
       })
     });
@@ -518,6 +536,7 @@ async function handleFile(input) {
         document.getElementById("result-img").style.display = "";
         document.getElementById("result-img-src").src = currentPreview;
       }
+      // Parking card
       const parkingEl = document.getElementById("parking-indicator");
       if (parsed.is_parking_sign) {
         parkingEl.style.display = "";
@@ -529,21 +548,45 @@ async function handleFile(input) {
       } else {
         parkingEl.style.display = "none";
       }
-      document.getElementById("result-code").textContent = parsed.code;
+      // Main sign info — support both old (code/name_translated) and new (main_code/main_name_translated) fields
+      const code = parsed.main_code || parsed.code || "?";
+      const nameSv = parsed.main_name_sv || parsed.name_sv || "";
+      const nameTranslated = parsed.main_name_translated || parsed.name_translated || "";
+      const description = parsed.full_description || parsed.description || "";
+
+      document.getElementById("result-code").textContent = code;
       const catEl = document.getElementById("result-cat");
       catEl.textContent = `${c.icon} ${parsed.category}`;
       catEl.style.background = c.bg; catEl.style.color = c.text; catEl.style.borderColor = c.border;
       document.getElementById("result-conf").style.display = parsed.confidence==="low" ? "" : "none";
-      document.getElementById("result-sv").textContent = parsed.name_sv;
-      document.getElementById("result-ru").textContent = parsed.name_translated;
-      document.getElementById("result-desc").textContent = parsed.description;
+      document.getElementById("result-sv").textContent = nameSv;
+      document.getElementById("result-ru").textContent = nameTranslated;
+      document.getElementById("result-desc").textContent = description;
+
+      // Signs list (multiple signs)
+      const signsEl = document.getElementById("signs-list");
+      const signsRows = document.getElementById("signs-rows");
+      if (parsed.signs && parsed.signs.length > 1) {
+        signsEl.style.display = "";
+        signsRows.innerHTML = parsed.signs.map(s => `
+          <div class="sign-row">
+            <span class="sign-row-code">${s.code || "?"}</span>
+            <div class="sign-row-info">
+              <div class="sign-row-name">${s.name_translated || s.name_sv || ""}</div>
+              <div class="sign-row-desc">${s.description || ""}</div>
+            </div>
+          </div>`).join("");
+      } else {
+        signsEl.style.display = "none";
+      }
+
       setState("result");
 
       const history = loadHistory();
       history.unshift({
-        code: parsed.code,
-        name_sv: parsed.name_sv,
-        name_ru: parsed.name_translated,
+        code,
+        name_sv: nameSv,
+        name_ru: nameTranslated,
         category: parsed.category,
         is_parking_sign: parsed.is_parking_sign,
         parking_allowed: parsed.parking_allowed,
