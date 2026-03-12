@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="ru">
+<html lang="uk">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
@@ -11,9 +11,12 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;max-width:430px;margin:0 auto;display:flex;flex-direction:column;overflow-x:hidden}
-    .header{background:linear-gradient(135deg,#005B99,#00305A);padding:14px 20px;box-shadow:0 2px 16px rgba(0,48,90,0.3);display:flex;align-items:center;gap:10px}
+    .header{background:linear-gradient(135deg,#005B99,#00305A);padding:14px 20px;box-shadow:0 2px 16px rgba(0,48,90,0.3);display:flex;align-items:center;justify-content:space-between}
+    .header-left{display:flex;align-items:center;gap:10px}
     .header-title{color:white;font-weight:800;font-size:22px;letter-spacing:-0.5px;line-height:1}
     .header-sub{color:rgba(255,255,255,0.6);font-size:12px;margin-top:2px}
+    .lang-select{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;color:white;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;padding:7px 12px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='white'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-color:rgba(255,255,255,0.15)}
+    .lang-select option{background:#00305A;color:white}
     .tabs{display:flex;background:white;border-bottom:1px solid #DDE3EB}
     .tab{flex:1;padding:13px 0;background:none;border:none;border-bottom:3px solid transparent;color:#8A9BB0;font-weight:500;font-size:14px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
     .tab.active{border-bottom-color:#005B99;color:#005B99;font-weight:700}
@@ -77,7 +80,6 @@
     .empty-icon{font-size:52px}
     .empty-title{font-weight:700;font-size:17px}
     .hist-item{background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex}
-    .hist-img{width:80px;height:80px;object-fit:cover;flex-shrink:0}
     .hist-img-placeholder{width:80px;height:80px;flex-shrink:0;background:#EEF1F6;display:flex;align-items:center;justify-content:center;font-size:28px}
     .hist-info{padding:12px 14px;flex:1;min-width:0}
     .hist-badges{display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap}
@@ -94,16 +96,23 @@
 <body>
 
 <div class="header">
-  <span style="font-size:26px">🇸🇪</span>
-  <div>
-    <div class="header-title">Vägmärken</div>
-    <div class="header-sub">Сканер дорожных знаков</div>
+  <div class="header-left">
+    <span style="font-size:26px">🇸🇪</span>
+    <div>
+      <div class="header-title">Vägmärken</div>
+      <div class="header-sub" id="header-sub">Сканер дорожніх знаків</div>
+    </div>
   </div>
+  <select class="lang-select" id="lang-select" onchange="setLang(this.value)">
+    <option value="uk">UA</option>
+    <option value="sv">SE</option>
+    <option value="ru">🐷 ru</option>
+  </select>
 </div>
 
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('scan')">📷 Сканировать</button>
-  <button class="tab" id="hist-tab" onclick="switchTab('history')">🗂 История (0)</button>
+  <button class="tab active" id="tab-scan" onclick="switchTab('scan')">📷 <span data-i18n="tab_scan"></span></button>
+  <button class="tab" id="hist-tab" onclick="switchTab('history')">🗂 <span data-i18n="tab_history"></span> (0)</button>
 </div>
 
 <div class="content">
@@ -115,18 +124,18 @@
           <div class="corner tl"></div><div class="corner tr"></div>
           <div class="corner bl"></div><div class="corner br"></div>
         </div>
-        <div class="hero-hint">Сфотографируй знак — распознаю и проверю парковку</div>
+        <div class="hero-hint" data-i18n="hero_hint"></div>
       </div>
       <div class="actions">
         <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">
-          <span style="font-size:22px">📸</span> Снять на камеру
+          <span style="font-size:22px">📸</span> <span data-i18n="btn_camera"></span>
         </button>
         <input id="camera-input" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)"/>
         <button class="btn btn-secondary" onclick="document.getElementById('gallery-input').click()">
-          <span style="font-size:20px">🖼️</span> Загрузить из галереи
+          <span style="font-size:20px">🖼️</span> <span data-i18n="btn_gallery"></span>
         </button>
         <input id="gallery-input" type="file" accept="image/*" style="display:none" onchange="handleFile(this)"/>
-        <div class="tip"><span style="font-size:18px">💡</span><span>Для парковочных знаков автоматически учитывается текущая дата и время.</span></div>
+        <div class="tip"><span style="font-size:18px">💡</span><span data-i18n="tip_text"></span></div>
       </div>
     </div>
     <div id="state-scanning" style="display:none">
@@ -134,8 +143,8 @@
         <div class="preview-thumb" id="scan-thumb" style="display:none"><img id="scan-thumb-img" src="" alt=""/></div>
         <div>
           <div class="spinner"></div>
-          <div class="scanning-title">Распознаю знак…</div>
-          <div class="scanning-sub" id="scan-info">Подготавливаю…</div>
+          <div class="scanning-title" data-i18n="scanning_title"></div>
+          <div class="scanning-sub" id="scan-info"></div>
         </div>
       </div>
     </div>
@@ -154,20 +163,20 @@
         <div class="badges">
           <div class="code-badge" id="result-code"></div>
           <div class="cat-badge" id="result-cat"></div>
-          <div class="low-conf" id="result-conf" style="display:none">⚠️ Низкая уверенность</div>
+          <div class="low-conf" id="result-conf" style="display:none">⚠️ <span data-i18n="low_confidence"></span></div>
         </div>
         <div class="card">
-          <div class="card-label">ШВЕДСКОЕ НАЗВАНИЕ</div>
+          <div class="card-label" data-i18n="label_sv_name"></div>
           <div class="card-value" id="result-sv"></div>
           <div class="divider"></div>
-          <div class="card-label">ПЕРЕВОД</div>
+          <div class="card-label" data-i18n="label_translation"></div>
           <div class="card-value" id="result-ru"></div>
         </div>
         <div class="card">
-          <div class="card-label">ОПИСАНИЕ</div>
+          <div class="card-label" data-i18n="label_description"></div>
           <div class="desc-text" id="result-desc"></div>
         </div>
-        <button class="btn btn-primary" onclick="reset()"><span style="font-size:20px">📷</span> Сканировать ещё</button>
+        <button class="btn btn-primary" onclick="reset()"><span style="font-size:20px">📷</span> <span data-i18n="btn_scan_more"></span></button>
       </div>
     </div>
     <div id="state-error" style="display:none">
@@ -175,14 +184,14 @@
         <div class="error-center">
           <div class="error-thumb" id="err-thumb" style="display:none"><img id="err-thumb-img" src="" alt=""/></div>
           <div class="error-icon">🔍</div>
-          <div class="error-title">Знак не распознан</div>
+          <div class="error-title" data-i18n="error_title"></div>
           <div class="error-msg" id="err-msg"></div>
         </div>
         <div class="debug" id="debug-panel" style="display:none">
-          <div class="debug-title">🔧 ДИАГНОСТИКА</div>
+          <div class="debug-title">🔧 DIAGNOSTICS</div>
           <div id="debug-rows"></div>
         </div>
-        <button class="btn btn-primary" onclick="reset()">Попробовать снова</button>
+        <button class="btn btn-primary" onclick="reset()"><span data-i18n="btn_retry"></span></button>
       </div>
     </div>
   </div>
@@ -193,27 +202,164 @@
 </div>
 
 <script>
-const CAT = {
-  "предупреждающий": { bg:"#FFF8E1", border:"#F9A825", text:"#6D4C00", icon:"⚠️" },
-  "запрещающий":     { bg:"#FFEBEE", border:"#C62828", text:"#7A0000", icon:"🚫" },
-  "предписывающий":  { bg:"#E3F2FD", border:"#1565C0", text:"#0D2F6E", icon:"🔵" },
-  "информационный":  { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"ℹ️" },
-  "указательный":    { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"🗺️" },
+const TRANSLATIONS = {
+  uk: {
+    header_sub: "Сканер дорожніх знаків",
+    tab_scan: "Сканувати",
+    tab_history: "Історія",
+    hero_hint: "Сфотографуй знак — розпізнаю та перевірю паркування",
+    btn_camera: "Зробити фото",
+    btn_gallery: "Завантажити з галереї",
+    tip_text: "Для знаків паркування автоматично враховується поточна дата і час.",
+    scanning_title: "Розпізнаю знак…",
+    parking_allowed: "Паркування дозволено",
+    parking_forbidden: "Паркування заборонено",
+    low_confidence: "Низька впевненість",
+    label_sv_name: "ШВЕДСЬКА НАЗВА",
+    label_translation: "ПЕРЕКЛАД",
+    label_description: "ОПИС",
+    btn_scan_more: "Сканувати ще",
+    error_title: "Знак не розпізнано",
+    btn_retry: "Спробувати ще раз",
+    empty_title: "Історія порожня",
+    empty_sub: "Відскануй перший знак — він з'явиться тут",
+    hist_parking_ok: "🟢 Можна",
+    hist_parking_no: "🔴 Не можна",
+    clear_history: "Очистити історію",
+    confirm_clear: "Очистити всю історію?",
+    cat_warning: "попереджувальний",
+    cat_prohibitory: "заборонний",
+    cat_mandatory: "приписувальний",
+    cat_info: "інформаційний",
+    cat_guide: "вказівний",
+  },
+  sv: {
+    header_sub: "Vägmärkesscanner",
+    tab_scan: "Skanna",
+    tab_history: "Historik",
+    hero_hint: "Fotografera skylten — jag känner igen och kontrollerar parkering",
+    btn_camera: "Ta foto",
+    btn_gallery: "Ladda från galleri",
+    tip_text: "För parkeringsskyltar används automatiskt aktuellt datum och tid.",
+    scanning_title: "Känner igen skylt…",
+    parking_allowed: "Parkering tillåten",
+    parking_forbidden: "Parkering förbjuden",
+    low_confidence: "Lågt förtroende",
+    label_sv_name: "SVENSKT NAMN",
+    label_translation: "ÖVERSÄTTNING",
+    label_description: "BESKRIVNING",
+    btn_scan_more: "Skanna mer",
+    error_title: "Skylten kändes inte igen",
+    btn_retry: "Försök igen",
+    empty_title: "Historiken är tom",
+    empty_sub: "Skanna din första skylt — den visas här",
+    hist_parking_ok: "🟢 Tillåten",
+    hist_parking_no: "🔴 Förbjuden",
+    clear_history: "Rensa historik",
+    confirm_clear: "Rensa all historik?",
+    cat_warning: "varning",
+    cat_prohibitory: "förbud",
+    cat_mandatory: "påbud",
+    cat_info: "information",
+    cat_guide: "vägledning",
+  },
+  ru: {
+    header_sub: "Сканер дорожных знаков",
+    tab_scan: "Сканировать",
+    tab_history: "История",
+    hero_hint: "Сфотографируй знак — распознаю и проверю парковку",
+    btn_camera: "Снять на камеру",
+    btn_gallery: "Загрузить из галереи",
+    tip_text: "Для парковочных знаков автоматически учитывается текущая дата и время.",
+    scanning_title: "Распознаю знак…",
+    parking_allowed: "Парковаться можно",
+    parking_forbidden: "Парковаться нельзя",
+    low_confidence: "Низкая уверенность",
+    label_sv_name: "ШВЕДСКОЕ НАЗВАНИЕ",
+    label_translation: "ПЕРЕВОД",
+    label_description: "ОПИСАНИЕ",
+    btn_scan_more: "Сканировать ещё",
+    error_title: "Знак не распознан",
+    btn_retry: "Попробовать снова",
+    empty_title: "История пуста",
+    empty_sub: "Отсканируй первый знак — он появится здесь",
+    hist_parking_ok: "🟢 Можно",
+    hist_parking_no: "🔴 Нельзя",
+    clear_history: "Очистить историю",
+    confirm_clear: "Очистить всю историю?",
+    cat_warning: "предупреждающий",
+    cat_prohibitory: "запрещающий",
+    cat_mandatory: "предписывающий",
+    cat_info: "информационный",
+    cat_guide: "указательный",
+  }
+};
+
+// API response language per UI language
+const API_LANG = {
+  uk: "Ukrainian",
+  sv: "Swedish",
+  ru: "Russian"
 };
 
 const STORAGE_KEY = "vagmarken_history";
+const LANG_KEY = "vagmarken_lang";
+let currentLang = localStorage.getItem(LANG_KEY) || "uk";
 let currentPreview = null;
 
+function t(key) {
+  return TRANSLATIONS[currentLang][key] || TRANSLATIONS.uk[key] || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem(LANG_KEY, lang);
+  document.getElementById("lang-select").value = lang;
+  applyTranslations();
+  renderHistory();
+}
+
+function applyTranslations() {
+  document.getElementById("header-sub").textContent = t("header_sub");
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    el.textContent = t(el.getAttribute("data-i18n"));
+  });
+  // Update history tab count
+  const count = loadHistory().length;
+  document.getElementById("hist-tab").innerHTML = `🗂 <span data-i18n="tab_history">${t("tab_history")}</span> (${count})`;
+}
+
+// CAT keys mapped to i18n
+function getCatStyle(category) {
+  const map = {
+    // Ukrainian
+    "попереджувальний": { bg:"#FFF8E1", border:"#F9A825", text:"#6D4C00", icon:"⚠️" },
+    "заборонний":       { bg:"#FFEBEE", border:"#C62828", text:"#7A0000", icon:"🚫" },
+    "приписувальний":   { bg:"#E3F2FD", border:"#1565C0", text:"#0D2F6E", icon:"🔵" },
+    "інформаційний":    { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"ℹ️" },
+    "вказівний":        { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"🗺️" },
+    // Russian
+    "предупреждающий":  { bg:"#FFF8E1", border:"#F9A825", text:"#6D4C00", icon:"⚠️" },
+    "запрещающий":      { bg:"#FFEBEE", border:"#C62828", text:"#7A0000", icon:"🚫" },
+    "предписывающий":   { bg:"#E3F2FD", border:"#1565C0", text:"#0D2F6E", icon:"🔵" },
+    "информационный":   { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"ℹ️" },
+    "указательный":     { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"🗺️" },
+    // Swedish
+    "varning":          { bg:"#FFF8E1", border:"#F9A825", text:"#6D4C00", icon:"⚠️" },
+    "förbud":           { bg:"#FFEBEE", border:"#C62828", text:"#7A0000", icon:"🚫" },
+    "påbud":            { bg:"#E3F2FD", border:"#1565C0", text:"#0D2F6E", icon:"🔵" },
+    "information":      { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"ℹ️" },
+    "vägledning":       { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"🗺️" },
+  };
+  return map[category] || { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"ℹ️" };
+}
+
 function loadHistory() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
 }
 
 function saveHistory(items) {
-  // Don't store full base64 images — too large for localStorage
-  const toSave = items.map(i => ({ ...i, image: null }));
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave)); } catch(e) { console.error(e); }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch(e) { console.error(e); }
 }
 
 function switchTab(tab) {
@@ -287,22 +433,24 @@ function prepareImage(file) {
 function renderHistory() {
   const items = loadHistory();
   const list = document.getElementById("history-list");
-  document.getElementById("hist-tab").textContent = `🗂 История (${items.length})`;
+  const count = items.length;
+  document.getElementById("hist-tab").innerHTML = `🗂 ${t("tab_history")} (${count})`;
 
   if (items.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">История пуста</div><div>Отсканируй первый знак — он появится здесь</div></div>`;
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">${t("empty_title")}</div><div>${t("empty_sub")}</div></div>`;
     return;
   }
 
   list.innerHTML = items.map(item => {
-    const c = CAT[item.category] || CAT["информационный"];
+    const c = getCatStyle(item.category);
     let parkingBadge = "";
     if (item.is_parking_sign) {
       parkingBadge = item.parking_allowed
-        ? `<span class="hist-parking-ok">🟢 Можно</span>`
-        : `<span class="hist-parking-no">🔴 Нельзя</span>`;
+        ? `<span class="hist-parking-ok">${t("hist_parking_ok")}</span>`
+        : `<span class="hist-parking-no">${t("hist_parking_no")}</span>`;
     }
-    const timeStr = item.ts ? new Date(item.ts).toLocaleString("ru") : "";
+    const timeStr = item.ts ? new Date(item.ts).toLocaleString(currentLang === "sv" ? "sv-SE" : currentLang === "uk" ? "uk-UA" : "ru-RU") : "";
+    const displayName = currentLang === "sv" ? (item.name_sv || item.name_ru) : item.name_ru;
     return `<div class="hist-item">
       <div class="hist-img-placeholder">🚦</div>
       <div class="hist-info">
@@ -310,23 +458,20 @@ function renderHistory() {
           <span class="hist-code">${item.code || "?"}</span>
           ${parkingBadge || `<span class="hist-cat" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${c.icon} ${item.category}</span>`}
         </div>
-        <div class="hist-name">${item.name_ru || ""}</div>
+        <div class="hist-name">${displayName || ""}</div>
         <div class="hist-sv">${item.name_sv || ""}</div>
         ${timeStr ? `<div class="hist-time">${timeStr}</div>` : ""}
       </div>
     </div>`;
-  }).join("") + `<button class="clear-btn" onclick="clearHistory()">Очистить историю</button>`;
+  }).join("") + `<button class="clear-btn" onclick="clearHistory()">${t("clear_history")}</button>`;
 }
 
 function clearHistory() {
-  if (confirm("Очистить всю историю?")) {
+  if (confirm(t("confirm_clear"))) {
     localStorage.removeItem(STORAGE_KEY);
     renderHistory();
   }
 }
-
-// Init tab counter
-document.getElementById("hist-tab").textContent = `🗂 История (${loadHistory().length})`;
 
 async function handleFile(input) {
   const file = input.files?.[0];
@@ -337,7 +482,7 @@ async function handleFile(input) {
 
   try {
     const prep = await prepareImage(file);
-    if (!prep.ok) throw new Error("Подготовка: " + prep.error);
+    if (!prep.ok) throw new Error(prep.error);
     dbg.imgKb = prep.kb+"KB";
     dbg.dims = `${prep.w}×${prep.h}`;
     currentPreview = prep.dataUrl;
@@ -350,20 +495,25 @@ async function handleFile(input) {
     const resp = await fetch("/api/scan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: base64, localTime: now.toTimeString().slice(0,5), localDay: now.getDate() })
+      body: JSON.stringify({
+        image: base64,
+        localTime: now.toTimeString().slice(0,5),
+        localDay: now.getDate(),
+        responseLang: API_LANG[currentLang]
+      })
     });
 
     dbg.httpStatus = resp.status;
     const data = await resp.json();
     dbg.raw = JSON.stringify(data).slice(0, 200);
-    if (!resp.ok) throw new Error(data.error || "Ошибка сервера");
-    if (!data.text) throw new Error("Пустой ответ от модели");
+    if (!resp.ok) throw new Error(data.error || "Server error");
+    if (!data.text) throw new Error("Empty response");
 
     const parsed = extractJSON(data.text);
-    if (!parsed) throw new Error(`Не удалось разобрать: "${data.text.slice(0,80)}"`);
+    if (!parsed) throw new Error(`Parse error: "${data.text.slice(0,80)}"`);
 
     if (parsed.found) {
-      const c = CAT[parsed.category] || CAT["информационный"];
+      const c = getCatStyle(parsed.category);
       if (currentPreview) {
         document.getElementById("result-img").style.display = "";
         document.getElementById("result-img-src").src = currentPreview;
@@ -374,8 +524,8 @@ async function handleFile(input) {
         const allowed = parsed.parking_allowed;
         document.getElementById("parking-card").className = "parking-card " + (allowed ? "allowed" : "forbidden");
         document.getElementById("parking-icon").textContent = allowed ? "🟢" : "🔴";
-        document.getElementById("parking-status").textContent = allowed ? "Парковаться можно" : "Парковаться нельзя";
-        document.getElementById("parking-reason").textContent = parsed.parking_reason_ru || "";
+        document.getElementById("parking-status").textContent = allowed ? t("parking_allowed") : t("parking_forbidden");
+        document.getElementById("parking-reason").textContent = parsed.parking_reason || "";
       } else {
         parkingEl.style.display = "none";
       }
@@ -385,22 +535,29 @@ async function handleFile(input) {
       catEl.style.background = c.bg; catEl.style.color = c.text; catEl.style.borderColor = c.border;
       document.getElementById("result-conf").style.display = parsed.confidence==="low" ? "" : "none";
       document.getElementById("result-sv").textContent = parsed.name_sv;
-      document.getElementById("result-ru").textContent = parsed.name_ru;
-      document.getElementById("result-desc").textContent = parsed.description_ru;
+      document.getElementById("result-ru").textContent = parsed.name_translated;
+      document.getElementById("result-desc").textContent = parsed.description;
       setState("result");
 
-      // Save to localStorage
       const history = loadHistory();
-      history.unshift({ ...parsed, image: null, ts: Date.now() });
+      history.unshift({
+        code: parsed.code,
+        name_sv: parsed.name_sv,
+        name_ru: parsed.name_translated,
+        category: parsed.category,
+        is_parking_sign: parsed.is_parking_sign,
+        parking_allowed: parsed.parking_allowed,
+        ts: Date.now()
+      });
       saveHistory(history.slice(0, 50));
-      document.getElementById("hist-tab").textContent = `🗂 История (${history.length > 50 ? 50 : history.length})`;
+      renderHistory();
 
     } else {
       if (currentPreview) {
         document.getElementById("err-thumb").style.display = "";
         document.getElementById("err-thumb-img").src = currentPreview;
       }
-      document.getElementById("err-msg").textContent = parsed.reason || "Знак не найден на фото";
+      document.getElementById("err-msg").textContent = parsed.reason || t("error_title");
       showDebug(null);
       setState("error");
     }
@@ -415,6 +572,9 @@ async function handleFile(input) {
     setState("error");
   }
 }
+
+// Init
+setLang(currentLang);
 </script>
 
 </body>
