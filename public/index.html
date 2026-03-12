@@ -11,14 +11,9 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     body{font-family:'Outfit',sans-serif;background:#F0F4F8;min-height:100vh;max-width:430px;margin:0 auto;display:flex;flex-direction:column;overflow-x:hidden}
-    .header{background:linear-gradient(135deg,#005B99,#00305A);padding:14px 20px;box-shadow:0 2px 16px rgba(0,48,90,0.3);display:flex;align-items:center;justify-content:space-between}
-    .header-left{display:flex;align-items:center;gap:10}
+    .header{background:linear-gradient(135deg,#005B99,#00305A);padding:14px 20px;box-shadow:0 2px 16px rgba(0,48,90,0.3);display:flex;align-items:center;gap:10px}
     .header-title{color:white;font-weight:800;font-size:22px;letter-spacing:-0.5px;line-height:1}
     .header-sub{color:rgba(255,255,255,0.6);font-size:12px;margin-top:2px}
-    .auth-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;color:white;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;padding:7px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
-    .auth-btn:active{opacity:0.8}
-    .user-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.4)}
-    .auth-area{display:flex;align-items:center;gap:8px}
     .tabs{display:flex;background:white;border-bottom:1px solid #DDE3EB}
     .tab{flex:1;padding:13px 0;background:none;border:none;border-bottom:3px solid transparent;color:#8A9BB0;font-weight:500;font-size:14px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
     .tab.active{border-bottom-color:#005B99;color:#005B99;font-weight:700}
@@ -81,12 +76,9 @@
     .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8A9BB0;gap:14px;padding:40px;text-align:center}
     .empty-icon{font-size:52px}
     .empty-title{font-weight:700;font-size:17px}
-    .login-banner{background:white;border-radius:16px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;margin-bottom:4px}
-    .login-banner-title{font-weight:700;font-size:16px;color:#1A2B3C}
-    .login-banner-sub{font-size:13px;color:#8A9BB0;line-height:1.5}
-    .btn-google{background:white;color:#1A2B3C;border:2px solid #DDE3EB !important;font-size:15px;font-weight:700;padding:14px;gap:10px;border-radius:14px;width:100%}
     .hist-item{background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex}
-    .hist-img{width:80px;height:80px;object-fit:cover;flex-shrink:0;background:#eee;display:flex;align-items:center;justify-content:center;font-size:28px}
+    .hist-img{width:80px;height:80px;object-fit:cover;flex-shrink:0}
+    .hist-img-placeholder{width:80px;height:80px;flex-shrink:0;background:#EEF1F6;display:flex;align-items:center;justify-content:center;font-size:28px}
     .hist-info{padding:12px 14px;flex:1;min-width:0}
     .hist-badges{display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap}
     .hist-code{background:#005B99;color:white;font-weight:800;font-size:13px;padding:2px 9px;border-radius:6px}
@@ -96,20 +88,16 @@
     .hist-name{font-weight:700;font-size:14px;color:#1A2B3C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .hist-sv{font-size:12px;color:#8A9BB0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .hist-time{font-size:11px;color:#B0BEC5;margin-top:3px}
+    .clear-btn{background:none;border:1px solid #DDE3EB;border-radius:10px;color:#8A9BB0;font-size:13px;font-family:'Outfit',sans-serif;padding:8px 16px;cursor:pointer;align-self:center}
   </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-left">
-    <span style="font-size:26px">🇸🇪</span>
-    <div>
-      <div class="header-title">Vägmärken</div>
-      <div class="header-sub">Сканер дорожных знаков</div>
-    </div>
-  </div>
-  <div class="auth-area" id="auth-area">
-    <button class="auth-btn" id="auth-btn">Войти</button>
+  <span style="font-size:26px">🇸🇪</span>
+  <div>
+    <div class="header-title">Vägmärken</div>
+    <div class="header-sub">Сканер дорожных знаков</div>
   </div>
 </div>
 
@@ -204,22 +192,7 @@
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const app = initializeApp({
-  apiKey: "AIzaSyBRbeDEAntmXaPusYrtjitKpgPrHZRQyjI",
-  authDomain: "vagmarken-ebb37.firebaseapp.com",
-  projectId: "vagmarken-ebb37",
-  storageBucket: "vagmarken-ebb37.firebasestorage.app",
-  messagingSenderId: "1047521821624",
-  appId: "1:1047521821624:web:6c12c4c7d9c1941c2c454d"
-});
-const auth = getAuth(app);
-const db = getFirestore(app);
-
+<script>
 const CAT = {
   "предупреждающий": { bg:"#FFF8E1", border:"#F9A825", text:"#6D4C00", icon:"⚠️" },
   "запрещающий":     { bg:"#FFEBEE", border:"#C62828", text:"#7A0000", icon:"🚫" },
@@ -228,114 +201,27 @@ const CAT = {
   "указательный":    { bg:"#E8F5E9", border:"#2E7D32", text:"#1B4B1E", icon:"🗺️" },
 };
 
-let currentUser = null;
+const STORAGE_KEY = "vagmarken_history";
 let currentPreview = null;
-let localHistory = [];
 
-// Process redirect result first, then auth state will update automatically
-getRedirectResult(auth).catch(e => console.error("Redirect:", e));
-
-onAuthStateChanged(auth, async user => {
-  currentUser = user;
-  const area = document.getElementById("auth-area");
-  if (user) {
-    area.innerHTML = `
-      ${user.photoURL ? `<img class="user-avatar" src="${user.photoURL}" />` : ""}
-      <button class="auth-btn" id="auth-btn">Выйти</button>`;
-    document.getElementById("auth-btn").onclick = () => signOut(auth);
-    await loadHistory();
-  } else {
-    area.innerHTML = `<button class="auth-btn" id="auth-btn">🔑 Войти</button>`;
-    document.getElementById("auth-btn").onclick = doSignIn;
-    renderHistory(localHistory);
-  }
-});
-
-async function doSignIn() {
+function loadHistory() {
   try {
-    await signInWithRedirect(auth, new GoogleAuthProvider());
-  } catch(e) { console.error(e); }
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch { return []; }
 }
 
-async function saveToFirestore(item) {
-  if (!currentUser) return;
-  try {
-    await addDoc(collection(db, "users", currentUser.uid, "history"), {
-      code: item.code || "",
-      name_sv: item.name_sv || "",
-      name_ru: item.name_ru || "",
-      description_ru: item.description_ru || "",
-      category: item.category || "",
-      confidence: item.confidence || "",
-      is_parking_sign: item.is_parking_sign || false,
-      parking_allowed: item.parking_allowed ?? null,
-      parking_reason_ru: item.parking_reason_ru || "",
-      ts: serverTimestamp()
-    });
-  } catch(e) { console.error("Firestore save:", e); }
+function saveHistory(items) {
+  // Don't store full base64 images — too large for localStorage
+  const toSave = items.map(i => ({ ...i, image: null }));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave)); } catch(e) { console.error(e); }
 }
 
-async function loadHistory() {
-  if (!currentUser) return;
-  try {
-    const q = query(collection(db, "users", currentUser.uid, "history"), orderBy("ts", "desc"), limit(30));
-    const snap = await getDocs(q);
-    const items = snap.docs.map(d => ({ ...d.data() }));
-    renderHistory(items);
-  } catch(e) { console.error("Firestore load:", e); }
-}
-
-function renderHistory(items) {
-  const list = document.getElementById("history-list");
-  document.getElementById("hist-tab").textContent = `🗂 История (${items.length})`;
-
-  if (!currentUser) {
-    list.innerHTML = `
-      <div class="login-banner">
-        <div style="font-size:38px">☁️</div>
-        <div class="login-banner-title">Сохраняй историю в облако</div>
-        <div class="login-banner-sub">Войди через Google — история будет доступна на всех устройствах</div>
-        <button class="btn btn-google" id="login-btn">
-          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-          Войти через Google
-        </button>
-      </div>
-      ${items.length === 0 ? `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">История пуста</div><div>Отсканируй первый знак</div></div>` : items.map(renderItem).join("")}`;
-    document.getElementById("login-btn").onclick = doSignIn;
-    return;
-  }
-
-  if (items.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">История пуста</div><div>Отсканируй первый знак — он появится здесь</div></div>`;
-    return;
-  }
-  list.innerHTML = items.map(renderItem).join("");
-}
-
-function renderItem(item) {
-  const c = CAT[item.category] || CAT["информационный"];
-  let parkingBadge = "";
-  if (item.is_parking_sign) {
-    parkingBadge = item.parking_allowed
-      ? `<span class="hist-parking-ok">🟢 Можно</span>`
-      : `<span class="hist-parking-no">🔴 Нельзя</span>`;
-  }
-  let timeStr = "";
-  if (item.ts?.toDate) timeStr = item.ts.toDate().toLocaleString("ru");
-  else if (item.ts) timeStr = new Date(item.ts).toLocaleString("ru");
-
-  return `<div class="hist-item">
-    <div class="hist-img">🚦</div>
-    <div class="hist-info">
-      <div class="hist-badges">
-        <span class="hist-code">${item.code || "?"}</span>
-        ${parkingBadge || `<span class="hist-cat" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${c.icon} ${item.category}</span>`}
-      </div>
-      <div class="hist-name">${item.name_ru || ""}</div>
-      <div class="hist-sv">${item.name_sv || ""}</div>
-      ${timeStr ? `<div class="hist-time">${timeStr}</div>` : ""}
-    </div>
-  </div>`;
+function switchTab(tab) {
+  document.querySelectorAll(".tab").forEach((t,i) => t.classList.toggle("active", (i===0&&tab==="scan")||(i===1&&tab==="history")));
+  document.getElementById("page-scan").classList.toggle("active", tab==="scan");
+  document.getElementById("page-history").classList.toggle("active", tab==="history");
+  if (tab==="scan") reset();
+  if (tab==="history") renderHistory();
 }
 
 function setState(s) {
@@ -398,17 +284,51 @@ function prepareImage(file) {
   });
 }
 
-// Expose to HTML
-window.switchTab = (tab) => {
-  document.querySelectorAll(".tab").forEach((t,i) => t.classList.toggle("active", (i===0&&tab==="scan")||(i===1&&tab==="history")));
-  document.getElementById("page-scan").classList.toggle("active", tab==="scan");
-  document.getElementById("page-history").classList.toggle("active", tab==="history");
-  if (tab==="scan") reset();
-  if (tab==="history") currentUser ? loadHistory() : renderHistory(localHistory);
-};
-window.reset = reset;
+function renderHistory() {
+  const items = loadHistory();
+  const list = document.getElementById("history-list");
+  document.getElementById("hist-tab").textContent = `🗂 История (${items.length})`;
 
-window.handleFile = async (input) => {
+  if (items.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">История пуста</div><div>Отсканируй первый знак — он появится здесь</div></div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(item => {
+    const c = CAT[item.category] || CAT["информационный"];
+    let parkingBadge = "";
+    if (item.is_parking_sign) {
+      parkingBadge = item.parking_allowed
+        ? `<span class="hist-parking-ok">🟢 Можно</span>`
+        : `<span class="hist-parking-no">🔴 Нельзя</span>`;
+    }
+    const timeStr = item.ts ? new Date(item.ts).toLocaleString("ru") : "";
+    return `<div class="hist-item">
+      <div class="hist-img-placeholder">🚦</div>
+      <div class="hist-info">
+        <div class="hist-badges">
+          <span class="hist-code">${item.code || "?"}</span>
+          ${parkingBadge || `<span class="hist-cat" style="background:${c.bg};color:${c.text};border:1px solid ${c.border}">${c.icon} ${item.category}</span>`}
+        </div>
+        <div class="hist-name">${item.name_ru || ""}</div>
+        <div class="hist-sv">${item.name_sv || ""}</div>
+        ${timeStr ? `<div class="hist-time">${timeStr}</div>` : ""}
+      </div>
+    </div>`;
+  }).join("") + `<button class="clear-btn" onclick="clearHistory()">Очистить историю</button>`;
+}
+
+function clearHistory() {
+  if (confirm("Очистить всю историю?")) {
+    localStorage.removeItem(STORAGE_KEY);
+    renderHistory();
+  }
+}
+
+// Init tab counter
+document.getElementById("hist-tab").textContent = `🗂 История (${loadHistory().length})`;
+
+async function handleFile(input) {
   const file = input.files?.[0];
   if (!file) return;
   input.value = "";
@@ -469,13 +389,12 @@ window.handleFile = async (input) => {
       document.getElementById("result-desc").textContent = parsed.description_ru;
       setState("result");
 
-      localHistory = [{ ...parsed, ts: Date.now() }, ...localHistory].slice(0, 30);
-      if (currentUser) {
-        await saveToFirestore(parsed);
-        await loadHistory();
-      } else {
-        renderHistory(localHistory);
-      }
+      // Save to localStorage
+      const history = loadHistory();
+      history.unshift({ ...parsed, image: null, ts: Date.now() });
+      saveHistory(history.slice(0, 50));
+      document.getElementById("hist-tab").textContent = `🗂 История (${history.length > 50 ? 50 : history.length})`;
+
     } else {
       if (currentPreview) {
         document.getElementById("err-thumb").style.display = "";
@@ -495,10 +414,7 @@ window.handleFile = async (input) => {
     showDebug(dbg);
     setState("error");
   }
-};
-
-// Init history render
-renderHistory([]);
+}
 </script>
 
 </body>
