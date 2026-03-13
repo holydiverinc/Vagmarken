@@ -146,7 +146,7 @@ headers: {
 “anthropic-version”: “2023-06-01”,
 },
 body: JSON.stringify({
-model: “claude-sonnet-4-6”,
+model: “claude-haiku-4-5-20251001”,
 max_tokens: 1500,
 system: SYSTEM_PROMPT,
 messages: [{
@@ -167,12 +167,17 @@ text: `Analyze ALL road signs in this image. Time: ${localTime}, day: ${localDay
 
 ```
 if (!response.ok) {
-  const errData = await response.json().catch(() => ({}));
-  return res.status(500).json({ error: errData?.error?.message || `API error ${response.status}` });
+  const errText = await response.text();
+  console.error("Anthropic API error:", response.status, errText);
+  return res.status(500).json({ error: `API ${response.status}: ${errText.slice(0, 300)}` });
 }
 
 const data = await response.json();
-const text = (data.content || [])
+if (!data.content || data.content.length === 0) {
+  console.error("Empty content:", JSON.stringify(data));
+  return res.status(500).json({ error: "Empty response from model: " + JSON.stringify(data).slice(0, 200) });
+}
+const text = data.content
   .filter(b => b.type === "text")
   .map(b => b.text)
   .join("")
