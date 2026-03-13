@@ -12,14 +12,13 @@ module.exports = async function handler(req, res) {
   var localDay = body.localDay || "";
   var localMonth = body.localMonth || "";
   var localWeekday = body.localWeekday || "";
-  var responseLang = body.responseLang || "Ukrainian";
 
   if (!image) return res.status(400).json({ error: "No image provided" });
 
   var apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "No API key" });
 
-  var prompt = "You are an expert on Swedish road signs. Analyze ALL signs in the image.\n\nOUTPUT LANGUAGE: You MUST write ALL text fields in " + responseLang + " language. This includes: name_translated, description, full_description, category, parking_reason, reason. DO NOT use English unless " + responseLang + " is English. The ONLY exception is name_sv which must always be in Swedish.\n\nSWEDISH TIME RULES: Main time e.g. 9-18 applies Monday-Friday. Time in parentheses e.g. (9-15) applies Saturday. Red time or no time = Sunday and holidays, usually no restriction or fee.\n\nCurrent context: time=" + localTime + " day=" + localDay + " month=" + localMonth + " weekday=" + localWeekday + " (1=Mon,6=Sat,7=Sun).\n\nReturn ONLY this raw JSON, no markdown:\n{\"found\":true,\"signs\":[{\"code\":\"\",\"name_sv\":\"Swedish only\",\"name_translated\":\"" + responseLang + " only\",\"description\":\"" + responseLang + " only\"}],\"main_code\":\"\",\"main_name_sv\":\"Swedish only\",\"main_name_translated\":\"" + responseLang + " only\",\"full_description\":\"" + responseLang + " only\",\"category\":\"" + responseLang + " only\",\"confidence\":\"high\",\"is_parking_sign\":true,\"parking_allowed\":true,\"parking_reason\":\"" + responseLang + " only\"}\nor if no sign: {\"found\":false,\"reason\":\"" + responseLang + " only\"}";
+  var prompt = "You are an expert on Swedish road signs. Analyze ALL signs in the image.\n\nSWEDISH TIME RULES: Main time e.g. 9-18 applies Monday-Friday. Time in parentheses e.g. (9-15) applies Saturday. Red time or no time = Sunday and holidays, usually no restriction or fee.\n\nCurrent context: time=" + localTime + " day=" + localDay + " month=" + localMonth + " weekday=" + localWeekday + " (1=Mon,6=Sat,7=Sun).\n\nReturn ONLY raw JSON, no markdown. You MUST provide translations in all three languages. Return this structure:\n{\n  \"found\": true,\n  \"signs\": [\n    {\n      \"code\": \"\",\n      \"name_sv\": \"Swedish name\",\n      \"name_uk\": \"Ukrainian name\",\n      \"name_ru\": \"Russian name\",\n      \"description_uk\": \"Ukrainian description\",\n      \"description_ru\": \"Russian description\",\n      \"description_sv\": \"Swedish description\"\n    }\n  ],\n  \"main_code\": \"\",\n  \"main_name_sv\": \"\",\n  \"main_name_uk\": \"\",\n  \"main_name_ru\": \"\",\n  \"description_uk\": \"\",\n  \"description_ru\": \"\",\n  \"description_sv\": \"\",\n  \"category_uk\": \"\",\n  \"category_ru\": \"\",\n  \"category_sv\": \"\",\n  \"confidence\": \"high\",\n  \"is_parking_sign\": true,\n  \"parking_allowed\": true,\n  \"parking_reason_uk\": \"\",\n  \"parking_reason_ru\": \"\",\n  \"parking_reason_sv\": \"\"\n}\nor if no sign found: {\"found\": false, \"reason_uk\": \"\", \"reason_ru\": \"\", \"reason_sv\": \"\"}";
 
   try {
     var response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -31,13 +30,13 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 1500,
+        max_tokens: 2000,
         system: prompt,
         messages: [{
           role: "user",
           content: [
             { type: "image", source: { type: "base64", media_type: "image/jpeg", data: image } },
-            { type: "text", text: "Analyze all road signs. All text fields must be in " + responseLang + ". Return JSON only." }
+            { type: "text", text: "Analyze all road signs. Return JSON with all three languages (uk/ru/sv) for every text field." }
           ]
         }]
       })
