@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="uk">
 <head>
   <meta charset="UTF-8"/>
@@ -321,6 +320,9 @@ const STORAGE_KEY = "vagmarken_history";
 const LANG_KEY = "vagmarken_lang";
 let currentLang = localStorage.getItem(LANG_KEY) || "uk";
 let currentPreview = null;
+let currentBase64 = null;
+let currentState = "idle";
+let lastParsed = null;
 
 function t(key) {
   return TRANSLATIONS[currentLang][key] || TRANSLATIONS.uk[key] || key;
@@ -332,6 +334,9 @@ function setLang(lang) {
   document.getElementById("lang-select").value = lang;
   applyTranslations();
   renderHistory();
+  if (currentState === "result" && lastParsed) {
+    renderResult(lastParsed);
+  }
 }
 
 function applyTranslations() {
@@ -386,14 +391,81 @@ function switchTab(tab) {
 }
 
 function setState(s) {
+  currentState = s;
   ["idle","scanning","result","error"].forEach(x => {
     document.getElementById("state-"+x).style.display = x===s ? "" : "none";
   });
 }
 
+function renderResult(parsed) {
+  lastParsed = parsed;
+  const lang = currentLang; // uk, ru, sv
+  const category = parsed["category_" + lang] || parsed.category || "";
+  const c = getCatStyle(category);
+  if (currentPreview) {
+    document.getElementById("result-img").style.display = "";
+    document.getElementById("result-img-src").src = currentPreview;
+  }
+  // Parking card
+  const parkingEl = document.getElementById("parking-indicator");
+  if (parsed.is_parking_sign) {
+    parkingEl.style.display = "";
+    const allowed = parsed.parking_allowed;
+    document.getElementById("parking-card").className = "parking-card " + (allowed ? "allowed" : "forbidden");
+    document.getElementById("parking-icon").textContent = allowed ? "🟢" : "🔴";
+    document.getElementById("parking-status").textContent = allowed ? t("parking_allowed") : t("parking_forbidden");
+    document.getElementById("parking-reason").textContent = parsed["parking_reason_" + lang] || parsed.parking_reason || "";
+  } else {
+    parkingEl.style.display = "none";
+  }
+  const code = parsed.main_code || parsed.code || "?";
+  const nameSv = parsed.main_name_sv || parsed.name_sv || "";
+  const nameTranslated = parsed["main_name_" + lang] || parsed.main_name_translated || parsed.name_translated || nameSv;
+  const description = parsed["description_" + lang] || parsed.full_description || parsed.description || "";
+
+  document.getElementById("result-code").textContent = code;
+  const catEl = document.getElementById("result-cat");
+  catEl.textContent = `${c.icon} ${category}`;
+  catEl.style.background = c.bg; catEl.style.color = c.text; catEl.style.borderColor = c.border;
+  document.getElementById("result-conf").style.display = parsed.confidence==="low" ? "" : "none";
+  document.getElementById("result-sv").textContent = nameSv;
+  document.getElementById("result-ru").textContent = nameTranslated;
+  document.getElementById("result-desc").textContent = description;
+
+  const signsEl = document.getElementById("signs-list");
+  const signsRows = document.getElementById("signs-rows");
+  if (parsed.signs && parsed.signs.length > 1) {
+    signsEl.style.display = "";
+    signsRows.innerHTML = parsed.signs.map(s => `
+      <div class="sign-row">
+        <span class="sign-row-code">${s.code || "?"}</span>
+        <div class="sign-row-info">
+          <div class="sign-row-name">${s["name_" + lang] || s.name_translated || s.name_sv || ""}</div>
+          <div class="sign-row-desc">${s["description_" + lang] || s.description || ""}</div>
+        </div>
+      </div>`).join("");
+  } else {
+    signsEl.style.display = "none";
+  }
+
+  setState("result");
+
+  const history = loadHistory();
+  history.unshift({
+    code, name_sv: nameSv, name_ru: nameTranslated,
+    category,
+    is_parking_sign: parsed.is_parking_sign,
+    parking_allowed: parsed.parking_allowed,
+    ts: Date.now()
+  });
+  saveHistory(history.slice(0, 50));
+  renderHistory();
+}
+
 function reset() {
   setState("idle");
   currentPreview = null;
+  currentBase64 = null;
   document.getElementById("camera-input").value = "";
   document.getElementById("gallery-input").value = "";
 }
@@ -505,7 +577,8 @@ async function handleFile(input) {
     document.getElementById("scan-thumb-img").src = prep.dataUrl;
     document.getElementById("scan-info").textContent = `${prep.kb}KB · ${prep.w}×${prep.h}`;
 
-    const base64 = prep.dataUrl.split(",")[1];
+    currentBase64 = prep.dataUrl.split(",")[1];
+    const base64 = currentBase64;
     const now = new Date();
     const localWeekday = now.getDay() === 0 ? 7 : now.getDay(); // 1=Mon, 7=Sun
     const resp = await fetch("/api/scan", {
@@ -516,8 +589,7 @@ async function handleFile(input) {
         localTime: now.toTimeString().slice(0,5),
         localDay: now.getDate(),
         localMonth: now.getMonth() + 1,
-        localWeekday,
-        responseLang: API_LANG[currentLang]
+        localWeekday
       })
     });
 
@@ -531,70 +603,7 @@ async function handleFile(input) {
     if (!parsed) throw new Error(`Parse error: "${data.text.slice(0,80)}"`);
 
     if (parsed.found) {
-      const c = getCatStyle(parsed.category);
-      if (currentPreview) {
-        document.getElementById("result-img").style.display = "";
-        document.getElementById("result-img-src").src = currentPreview;
-      }
-      // Parking card
-      const parkingEl = document.getElementById("parking-indicator");
-      if (parsed.is_parking_sign) {
-        parkingEl.style.display = "";
-        const allowed = parsed.parking_allowed;
-        document.getElementById("parking-card").className = "parking-card " + (allowed ? "allowed" : "forbidden");
-        document.getElementById("parking-icon").textContent = allowed ? "🟢" : "🔴";
-        document.getElementById("parking-status").textContent = allowed ? t("parking_allowed") : t("parking_forbidden");
-        document.getElementById("parking-reason").textContent = parsed.parking_reason || "";
-      } else {
-        parkingEl.style.display = "none";
-      }
-      // Main sign info — support both old (code/name_translated) and new (main_code/main_name_translated) fields
-      const code = parsed.main_code || parsed.code || "?";
-      const nameSv = parsed.main_name_sv || parsed.name_sv || "";
-      const nameTranslated = parsed.main_name_translated || parsed.name_translated || "";
-      const description = parsed.full_description || parsed.description || "";
-
-      document.getElementById("result-code").textContent = code;
-      const catEl = document.getElementById("result-cat");
-      catEl.textContent = `${c.icon} ${parsed.category}`;
-      catEl.style.background = c.bg; catEl.style.color = c.text; catEl.style.borderColor = c.border;
-      document.getElementById("result-conf").style.display = parsed.confidence==="low" ? "" : "none";
-      document.getElementById("result-sv").textContent = nameSv;
-      document.getElementById("result-ru").textContent = nameTranslated;
-      document.getElementById("result-desc").textContent = description;
-
-      // Signs list (multiple signs)
-      const signsEl = document.getElementById("signs-list");
-      const signsRows = document.getElementById("signs-rows");
-      if (parsed.signs && parsed.signs.length > 1) {
-        signsEl.style.display = "";
-        signsRows.innerHTML = parsed.signs.map(s => `
-          <div class="sign-row">
-            <span class="sign-row-code">${s.code || "?"}</span>
-            <div class="sign-row-info">
-              <div class="sign-row-name">${s.name_translated || s.name_sv || ""}</div>
-              <div class="sign-row-desc">${s.description || ""}</div>
-            </div>
-          </div>`).join("");
-      } else {
-        signsEl.style.display = "none";
-      }
-
-      setState("result");
-
-      const history = loadHistory();
-      history.unshift({
-        code,
-        name_sv: nameSv,
-        name_ru: nameTranslated,
-        category: parsed.category,
-        is_parking_sign: parsed.is_parking_sign,
-        parking_allowed: parsed.parking_allowed,
-        ts: Date.now()
-      });
-      saveHistory(history.slice(0, 50));
-      renderHistory();
-
+      renderResult(parsed);
     } else {
       if (currentPreview) {
         document.getElementById("err-thumb").style.display = "";
@@ -619,6 +628,5 @@ async function handleFile(input) {
 // Init
 setLang(currentLang);
 </script>
-
 </body>
 </html>
