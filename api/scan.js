@@ -1,17 +1,17 @@
 const https = require(“https”);
-const { URL } = require(“url”);
 
-function httpsPost(url, headers, body) {
+function httpsPost(body) {
 return new Promise((resolve, reject) => {
-const urlObj = new URL(url);
 const data = JSON.stringify(body);
 const options = {
-hostname: urlObj.hostname,
-path: urlObj.pathname,
+hostname: “api.anthropic.com”,
+path: “/v1/messages”,
 method: “POST”,
 headers: {
-…headers,
+“Content-Type”: “application/json”,
 “Content-Length”: Buffer.byteLength(data),
+“x-api-key”: process.env.ANTHROPIC_API_KEY,
+“anthropic-version”: “2023-06-01”,
 },
 };
 const req = https.request(options, (res) => {
@@ -100,14 +100,7 @@ Return this JSON:
 If no sign found: {“found”: false, “reason”: “explanation”}`;
 
 try {
-const result = await httpsPost(
-“https://api.anthropic.com/v1/messages”,
-{
-“Content-Type”: “application/json”,
-“x-api-key”: process.env.ANTHROPIC_API_KEY,
-“anthropic-version”: “2023-06-01”,
-},
-{
+const result = await httpsPost({
 model: “claude-haiku-4-5-20251001”,
 max_tokens: 1500,
 system: SYSTEM_PROMPT,
@@ -118,8 +111,7 @@ content: [
 { type: “text”, text: `Analyze ALL road signs. Time:${localTime} Day:${localDay} Month:${localMonth} Weekday:${localWeekday}. Return JSON only.` }
 ]
 }]
-}
-);
+});
 
 ```
 if (result.status !== 200) {
