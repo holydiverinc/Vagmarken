@@ -6,7 +6,14 @@ res.setHeader(“Access-Control-Allow-Headers”, “Content-Type”);
 if (req.method === “OPTIONS”) return res.status(200).end();
 if (req.method !== “POST”) return res.status(405).json({ error: “Method not allowed” });
 
-const { image, localTime, localDay, localMonth, localWeekday, responseLang = “Ukrainian” } = req.body;
+// Parse body manually if needed
+let body = req.body;
+if (typeof body === “string”) {
+try { body = JSON.parse(body); } catch(e) { return res.status(400).json({ error: “Bad JSON: “ + e.message }); }
+}
+if (!body) return res.status(400).json({ error: “Empty body” });
+
+const { image, localTime, localDay, localMonth, localWeekday, responseLang = “Ukrainian” } = body;
 if (!image) return res.status(400).json({ error: “No image provided” });
 
 const SYSTEM_PROMPT = `You are the world’s foremost expert on Swedish road signs (Vägmärken), with complete mastery of all official Swedish traffic regulations (Trafikförordningen, Vägmärkesförordningen VMF 2007:90).
