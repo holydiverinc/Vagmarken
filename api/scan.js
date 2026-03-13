@@ -19,15 +19,7 @@ module.exports = async function handler(req, res) {
   var apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "No API key" });
 
-  var timeRules = "SWEDISH TIME PLATE RULES: Main time e.g. 9-18 applies Monday-Friday. Time in parentheses e.g. (9-15) applies on Saturdays. Times shown in red or not shown at all apply on Sundays and public holidays - usually meaning no fee or no restriction. Use current weekday=" + localWeekday + " (1=Mon,6=Sat,7=Sun) to determine which time rule applies RIGHT NOW.";
-
-  var langRules = "LANGUAGE: field name_sv always in Swedish. All other fields in " + responseLang + ".";
-
-  var context = "Current time=" + localTime + " day=" + localDay + " month=" + localMonth + " weekday=" + localWeekday + ".";
-
-  var format = "{\"found\":true,\"signs\":[{\"code\":\"\",\"name_sv\":\"\",\"name_translated\":\"\",\"description\":\"\"}],\"main_code\":\"\",\"main_name_sv\":\"\",\"main_name_translated\":\"\",\"full_description\":\"\",\"category\":\"\",\"confidence\":\"high\",\"is_parking_sign\":true,\"parking_allowed\":true,\"parking_reason\":\"\"} or {\"found\":false,\"reason\":\"\"}";
-
-  var prompt = "You are an expert on Swedish road signs. Analyze ALL signs in the image. " + langRules + " " + timeRules + " " + context + " Return ONLY raw JSON no markdown: " + format;
+  var prompt = "You are an expert on Swedish road signs. Analyze ALL signs in the image.\n\nOUTPUT LANGUAGE: You MUST write ALL text fields in " + responseLang + " language. This includes: name_translated, description, full_description, category, parking_reason, reason. DO NOT use English unless " + responseLang + " is English. The ONLY exception is name_sv which must always be in Swedish.\n\nSWEDISH TIME RULES: Main time e.g. 9-18 applies Monday-Friday. Time in parentheses e.g. (9-15) applies Saturday. Red time or no time = Sunday and holidays, usually no restriction or fee.\n\nCurrent context: time=" + localTime + " day=" + localDay + " month=" + localMonth + " weekday=" + localWeekday + " (1=Mon,6=Sat,7=Sun).\n\nReturn ONLY this raw JSON, no markdown:\n{\"found\":true,\"signs\":[{\"code\":\"\",\"name_sv\":\"Swedish only\",\"name_translated\":\"" + responseLang + " only\",\"description\":\"" + responseLang + " only\"}],\"main_code\":\"\",\"main_name_sv\":\"Swedish only\",\"main_name_translated\":\"" + responseLang + " only\",\"full_description\":\"" + responseLang + " only\",\"category\":\"" + responseLang + " only\",\"confidence\":\"high\",\"is_parking_sign\":true,\"parking_allowed\":true,\"parking_reason\":\"" + responseLang + " only\"}\nor if no sign: {\"found\":false,\"reason\":\"" + responseLang + " only\"}";
 
   try {
     var response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -45,7 +37,7 @@ module.exports = async function handler(req, res) {
           role: "user",
           content: [
             { type: "image", source: { type: "base64", media_type: "image/jpeg", data: image } },
-            { type: "text", text: "Analyze signs. Return JSON only." }
+            { type: "text", text: "Analyze all road signs. All text fields must be in " + responseLang + ". Return JSON only." }
           ]
         }]
       })
