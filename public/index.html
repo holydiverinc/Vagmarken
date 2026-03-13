@@ -97,8 +97,22 @@
     .sign-row-code{background:#005B99;color:white;font-weight:800;font-size:11px;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:2px}
     .sign-row-info{flex:1;min-width:0}
     .sign-row-name{font-weight:600;font-size:13px;color:#1A2B3C}
-    .sign-row-desc{font-size:12px;color:#6B7A8D;line-height:1.4;margin-top:2px}
-  </style>
+    .header-right{display:flex;align-items:center;gap:10px}
+    .info-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:50%;color:white;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
+    .modal-overlay.hidden{display:none}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .modal{background:white;border-radius:28px 28px 0 0;padding:28px 24px 40px;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;position:relative;animation:slideUp .25s ease-out}
+    @keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal-close{position:absolute;top:18px;right:18px;background:#F0F4F8;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6B7A8D}
+    .modal-title{font-size:20px;font-weight:800;color:#1A2B3C;margin-bottom:4px}
+    .modal-version{font-size:12px;color:#8A9BB0;margin-bottom:20px}
+    .modal-section{margin-bottom:18px}
+    .modal-section-title{font-size:11px;font-weight:700;color:#005B99;letter-spacing:0.8px;margin-bottom:8px}
+    .modal-section p{font-size:14px;color:#3D4F61;line-height:1.6}
+    .modal-divider{height:1px;background:#EEF1F6;margin:16px 0}
+    .modal-contact{display:flex;align-items:center;gap:10px;background:#F0F4F8;border-radius:14px;padding:12px 16px}
+    .modal-contact a{color:#005B99;font-weight:600;font-size:14px;text-decoration:none}
 </head>
 <body>
 
@@ -110,11 +124,55 @@
       <div class="header-sub" id="header-sub">Сканер дорожніх знаків</div>
     </div>
   </div>
-  <select class="lang-select" id="lang-select" onchange="setLang(this.value)">
-    <option value="uk">UA</option>
-    <option value="sv">SE</option>
-    <option value="ru">🐷 ru</option>
-  </select>
+  <div class="header-right">
+    <button class="info-btn" onclick="openInfo()">i</button>
+    <select class="lang-select" id="lang-select" onchange="setLang(this.value)">
+      <option value="uk">UA</option>
+      <option value="sv">SE</option>
+      <option value="ru">🐷 ru</option>
+    </select>
+  </div>
+</div>
+
+<!-- Info Modal -->
+<div class="modal-overlay hidden" id="info-modal" onclick="closeInfoOnOverlay(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeInfo()">✕</button>
+    <div class="modal-title">Vägmärken</div>
+    <div class="modal-version" id="modal-version">v1.3.0 · березень 2025</div>
+
+    <div class="modal-section">
+      <div class="modal-section-title" id="mi-disclaimer-title">⚠️ ВАЖЛИВО</div>
+      <p id="mi-disclaimer">Цей сервіс використовує штучний інтелект і може помилятися. Не є офіційним джерелом інформації про дорожні правила. Завжди перевіряйте знаки самостійно — відповідальність за штрафи несе водій.</p>
+    </div>
+
+    <div class="modal-divider"></div>
+
+    <div class="modal-section">
+      <div class="modal-section-title" id="mi-howto-title">📸 ЯК КОРИСТУВАТИСЯ</div>
+      <p id="mi-howto">Знімай знак великим планом. Якщо на стовпі кілька знаків — захопи всі в один кадр. Поточний час і дата враховуються автоматично для визначення дозволу на паркування.</p>
+    </div>
+
+    <div class="modal-divider"></div>
+
+    <div class="modal-section">
+      <div class="modal-section-title" id="mi-snow-title">❄️ ЗНАКИ СНІГОПРИБИРАННЯ</div>
+      <p id="mi-snow">Жовті знаки з червоною рамкою (1 okt–15 maj) забороняють паркування в певні дні для проїзду снігоприбиральників. У непарні дні — заборона біля будинків з непарними номерами, у парні — з парними.</p>
+    </div>
+
+    <div class="modal-divider"></div>
+
+    <div class="modal-section">
+      <div class="modal-section-title" id="mi-contact-title">✉️ ЗВ'ЯЗОК</div>
+      <div class="modal-contact">
+        <span style="font-size:20px">📬</span>
+        <div>
+          <div style="font-size:12px;color:#8A9BB0;margin-bottom:2px" id="mi-contact-sub">Знайшов помилку або є пропозиція?</div>
+          <a href="mailto:holy.diver.inc@gmail.com">holy.diver.inc@gmail.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="tabs">
@@ -221,7 +279,7 @@ const TRANSLATIONS = {
     hero_hint: "Сфотографуй знак — розпізнаю та перевірю паркування",
     btn_camera: "Зробити фото",
     btn_gallery: "Завантажити з галереї",
-    tip_text: "Для знаків паркування автоматично враховується поточна дата і час.",
+    tip_text: "Для кращого результату знімай знак впритул. Для знаків паркування автоматично враховується поточна дата і час.",
     scanning_title: "Розпізнаю знак…",
     parking_allowed: "Паркування дозволено",
     parking_forbidden: "Паркування заборонено",
@@ -252,7 +310,7 @@ const TRANSLATIONS = {
     hero_hint: "Fotografera skylten — jag känner igen och kontrollerar parkering",
     btn_camera: "Ta foto",
     btn_gallery: "Ladda från galleri",
-    tip_text: "För parkeringsskyltar används automatiskt aktuellt datum och tid.",
+    tip_text: "För bästa resultat, fotografera skylten på nära håll. För parkeringsskyltar används automatiskt aktuellt datum och tid.",
     scanning_title: "Känner igen skylt…",
     parking_allowed: "Parkering tillåten",
     parking_forbidden: "Parkering förbjuden",
@@ -283,7 +341,7 @@ const TRANSLATIONS = {
     hero_hint: "Сфотографируй знак — распознаю и проверю парковку",
     btn_camera: "Снять на камеру",
     btn_gallery: "Загрузить из галереи",
-    tip_text: "Для парковочных знаков автоматически учитывается текущая дата и время.",
+    tip_text: "Для лучшего результата снимай знак крупным планом. Для парковочных знаков автоматически учитывается текущая дата и время.",
     scanning_title: "Распознаю знак…",
     parking_allowed: "Парковаться можно",
     parking_forbidden: "Парковаться нельзя",
@@ -496,7 +554,7 @@ function prepareImage(file) {
       const img = new Image();
       img.onerror = () => resolve({ ok:false, error:"Image load failed" });
       img.onload = () => {
-        const MAX = 500;
+        const MAX = 1000;
         let w = img.naturalWidth, h = img.naturalHeight;
         if (!w || !h) return resolve({ ok:false, error:"Zero dimensions" });
         if (w > MAX || h > MAX) {
@@ -507,7 +565,7 @@ function prepareImage(file) {
           const canvas = document.createElement("canvas");
           canvas.width = w; canvas.height = h;
           canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
           resolve({ ok:true, dataUrl, w, h, kb:Math.round(dataUrl.length*0.75/1024) });
         } catch(e) { resolve({ ok:false, error:"Canvas: "+e.message }); }
       };
@@ -627,6 +685,65 @@ async function handleFile(input) {
 
 // Init
 setLang(currentLang);
+
+// Info modal
+const MODAL_CONTENT = {
+  uk: {
+    version: "v1.3.0 · березень 2025",
+    disclaimer_title: "⚠️ ВАЖЛИВО",
+    disclaimer: "Цей сервіс використовує штучний інтелект і може помилятися. Не є офіційним джерелом інформації про дорожні правила. Завжди перевіряйте знаки самостійно — відповідальність за штрафи несе водій.",
+    howto_title: "📸 ЯК КОРИСТУВАТИСЯ",
+    howto: "Знімай знак великим планом. Якщо на стовпі кілька знаків — захопи всі в один кадр. Поточний час і дата враховуються автоматично для визначення дозволу на паркування.",
+    snow_title: "❄️ ЗНАКИ СНІГОПРИБИРАННЯ",
+    snow: "Жовті знаки з червоною рамкою (1 okt–15 maj) забороняють паркування для проїзду снігоприбиральників. У непарні дні — заборона біля будинків з непарними номерами, у парні — з парними.",
+    contact_title: "✉️ ЗВ'ЯЗОК",
+    contact_sub: "Знайшов помилку або є пропозиція?",
+  },
+  sv: {
+    version: "v1.3.0 · mars 2025",
+    disclaimer_title: "⚠️ VIKTIGT",
+    disclaimer: "Denna tjänst använder artificiell intelligens och kan göra fel. Den är inte en officiell källa för trafikregler. Kontrollera alltid skyltarna själv — föraren ansvarar för eventuella böter.",
+    howto_title: "📸 HUR MAN ANVÄNDER",
+    howto: "Fotografera skylten på nära håll. Om det finns flera skyltar på stolpen — fånga alla i en bild. Aktuell tid och datum beaktas automatiskt för parkeringsbedömning.",
+    snow_title: "❄️ SNÖRÖJNINGSSKYLTAR",
+    snow: "Gula skyltar med röd ram (1 okt–15 maj) förbjuder parkering för snöröjningsfordon. Udda dagar — förbud vid hus med udda nummer, jämna dagar — vid hus med jämna nummer.",
+    contact_title: "✉️ KONTAKT",
+    contact_sub: "Hittade ett fel eller har ett förslag?",
+  },
+  ru: {
+    version: "v1.3.0 · март 2025",
+    disclaimer_title: "⚠️ ВАЖНО",
+    disclaimer: "Этот сервис использует искусственный интеллект и может ошибаться. Не является официальным источником информации о правилах дорожного движения. Всегда проверяйте знаки самостоятельно — ответственность за штрафы несёт водитель.",
+    howto_title: "📸 КАК ПОЛЬЗОВАТЬСЯ",
+    howto: "Снимай знак крупным планом. Если на столбе несколько знаков — захвати все в один кадр. Текущее время и дата учитываются автоматически для определения разрешения на парковку.",
+    snow_title: "❄️ ЗНАКИ СНЕГОУБОРКИ",
+    snow: "Жёлтые знаки с красной рамкой (1 okt–15 maj) запрещают парковку для проезда снегоуборочной техники. В нечётные дни — запрет у домов с нечётными номерами, в чётные — с чётными.",
+    contact_title: "✉️ СВЯЗЬ",
+    contact_sub: "Нашёл ошибку или есть предложение?",
+  }
+};
+
+function openInfo() {
+  const m = MODAL_CONTENT[currentLang] || MODAL_CONTENT.uk;
+  document.getElementById("modal-version").textContent = m.version;
+  document.getElementById("mi-disclaimer-title").textContent = m.disclaimer_title;
+  document.getElementById("mi-disclaimer").textContent = m.disclaimer;
+  document.getElementById("mi-howto-title").textContent = m.howto_title;
+  document.getElementById("mi-howto").textContent = m.howto;
+  document.getElementById("mi-snow-title").textContent = m.snow_title;
+  document.getElementById("mi-snow").textContent = m.snow;
+  document.getElementById("mi-contact-title").textContent = m.contact_title;
+  document.getElementById("mi-contact-sub").textContent = m.contact_sub;
+  document.getElementById("info-modal").classList.remove("hidden");
+}
+
+function closeInfo() {
+  document.getElementById("info-modal").classList.add("hidden");
+}
+
+function closeInfoOnOverlay(e) {
+  if (e.target === document.getElementById("info-modal")) closeInfo();
+}
 </script>
 </body>
 </html>
