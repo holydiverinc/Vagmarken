@@ -1,10 +1,5 @@
 {
   "version": 2,
   "public": true,
-  "outputDirectory": "public",
-  "functions": {
-    "api/scan.js": {
-      "maxDuration": 30
-    }
-  }
+  "outputDirectory": "public"
 }
