@@ -1,6 +1,6 @@
 const https = require(“https”);
 
-function httpsPost(body) {
+function httpsPost(apiKey, body) {
 return new Promise((resolve, reject) => {
 const data = JSON.stringify(body);
 const options = {
@@ -10,7 +10,7 @@ method: “POST”,
 headers: {
 “Content-Type”: “application/json”,
 “Content-Length”: Buffer.byteLength(data),
-“x-api-key”: String(apiKey),
+“x-api-key”: apiKey,
 “anthropic-version”: “2023-06-01”,
 },
 };
@@ -103,7 +103,7 @@ Return this JSON:
 If no sign found: {“found”: false, “reason”: “explanation”}`;
 
 try {
-const result = await httpsPost({
+const result = await httpsPost(apiKey, {
 model: “claude-haiku-4-5-20251001”,
 max_tokens: 1500,
 system: SYSTEM_PROMPT,
