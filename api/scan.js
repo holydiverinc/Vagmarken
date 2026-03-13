@@ -10,7 +10,7 @@ method: “POST”,
 headers: {
 “Content-Type”: “application/json”,
 “Content-Length”: Buffer.byteLength(data),
-“x-api-key”: process.env.ANTHROPIC_API_KEY,
+“x-api-key”: String(apiKey),
 “anthropic-version”: “2023-06-01”,
 },
 };
@@ -41,6 +41,9 @@ if (!body) return res.status(400).json({ error: “Empty body” });
 
 const { image, localTime, localDay, localMonth, localWeekday, responseLang = “Ukrainian” } = body;
 if (!image) return res.status(400).json({ error: “No image provided” });
+
+const apiKey = process.env.ANTHROPIC_API_KEY;
+if (!apiKey) return res.status(500).json({ error: “ANTHROPIC_API_KEY not set” });
 
 const SYSTEM_PROMPT = `You are an expert on Swedish road signs (Vägmärken) with complete knowledge of all official Swedish traffic signs (VMF 2007:90).
 
