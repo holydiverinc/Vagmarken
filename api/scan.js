@@ -19,7 +19,15 @@ module.exports = async function handler(req, res) {
   var apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "No API key" });
 
-  var prompt = "You are an expert on Swedish road signs. Analyze ALL signs in the image. IMPORTANT LANGUAGE RULES: The field 'name_sv' must ALWAYS be in Swedish. ALL other fields (name_translated, description, full_description, category, parking_reason, reason) must be in " + responseLang + ". Return ONLY raw JSON, no markdown. Current time=" + localTime + " day=" + localDay + " month=" + localMonth + " weekday=" + localWeekday + " (1=Mon,7=Sun). Return: {\"found\":true,\"signs\":[{\"code\":\"\",\"name_sv\":\"Swedish name\",\"name_translated\":\"name in " + responseLang + "\",\"description\":\"description in " + responseLang + "\"}],\"main_code\":\"\",\"main_name_sv\":\"Swedish name\",\"main_name_translated\":\"name in " + responseLang + "\",\"full_description\":\"full explanation in " + responseLang + "\",\"category\":\"category in " + responseLang + "\",\"confidence\":\"high\",\"is_parking_sign\":true,\"parking_allowed\":true,\"parking_reason\":\"reason in " + responseLang + "\"} or {\"found\":false,\"reason\":\"in " + responseLang + "\"}";
+  var timeRules = "SWEDISH TIME PLATE RULES: Main time e.g. 9-18 applies Monday-Friday. Time in parentheses e.g. (9-15) applies on Saturdays. Times shown in red or not shown at all apply on Sundays and public holidays - usually meaning no fee or no restriction. Use current weekday=" + localWeekday + " (1=Mon,6=Sat,7=Sun) to determine which time rule applies RIGHT NOW.";
+
+  var langRules = "LANGUAGE: field name_sv always in Swedish. All other fields in " + responseLang + ".";
+
+  var context = "Current time=" + localTime + " day=" + localDay + " month=" + localMonth + " weekday=" + localWeekday + ".";
+
+  var format = "{\"found\":true,\"signs\":[{\"code\":\"\",\"name_sv\":\"\",\"name_translated\":\"\",\"description\":\"\"}],\"main_code\":\"\",\"main_name_sv\":\"\",\"main_name_translated\":\"\",\"full_description\":\"\",\"category\":\"\",\"confidence\":\"high\",\"is_parking_sign\":true,\"parking_allowed\":true,\"parking_reason\":\"\"} or {\"found\":false,\"reason\":\"\"}";
+
+  var prompt = "You are an expert on Swedish road signs. Analyze ALL signs in the image. " + langRules + " " + timeRules + " " + context + " Return ONLY raw JSON no markdown: " + format;
 
   try {
     var response = await fetch("https://api.anthropic.com/v1/messages", {
