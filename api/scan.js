@@ -1,3 +1,11 @@
+export const config = {
+api: {
+bodyParser: {
+sizeLimit: ‘10mb’,
+},
+},
+};
+
 export default async function handler(req, res) {
 res.setHeader(“Access-Control-Allow-Origin”, “*”);
 res.setHeader(“Access-Control-Allow-Methods”, “POST, OPTIONS”);
@@ -146,7 +154,7 @@ headers: {
 “anthropic-version”: “2023-06-01”,
 },
 body: JSON.stringify({
-model: “claude-sonnet-4-20250514”,
+model: “claude-sonnet-4-6”,
 max_tokens: 1500,
 system: SYSTEM_PROMPT,
 messages: [{
